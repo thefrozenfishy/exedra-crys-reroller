@@ -205,7 +205,7 @@ def _find_abilities_in_text(ocr_text: str) -> list[str | None]:
     return found[:3]
 
 
-def fetch_current_crys_values(win, debug: bool = False) -> list[str | None]:
+def fetch_current_crys_values(win) -> list[str | None]:
     """
     Capture the full game window via PrintWindow (GPU-safe), OCR it across
     three image variants, and return the best-matched set of 3 substats.
@@ -216,9 +216,6 @@ def fetch_current_crys_values(win, debug: bool = False) -> list[str | None]:
         return [None, None, None]
 
     img = _capture_window(hwnd)
-
-    if debug:
-        _save_debug_window(img, "window")
 
     variants = _ocr_full_window(img)
     variant_names = ("colour", "gray", "bw")
@@ -280,7 +277,7 @@ def reroll(
         if stop_flag.is_set():
             break
 
-        current_values = fetch_current_crys_values(win, debug=False)
+        current_values = fetch_current_crys_values(win)
 
         if None in current_values:
             logger.warning(
@@ -339,15 +336,6 @@ def main():
 
     stop_flag = threading.Event()
     reroll_thread: threading.Thread | None = None
-
-    # ---- helpers ----
-
-    def debug_current():
-        results = fetch_current_crys_values(win, debug=True)
-        logger.info("Debug OCR results: %s", results)
-        logger.info(
-            "Window screenshot saved to debug/window.png — check it looks correct"
-        )
 
     def start_reroll():
         nonlocal reroll_thread
@@ -499,9 +487,6 @@ def main():
         side="left", padx=6
     )
     ttk.Button(btn_frame, text="Stop", command=stop_reroll).pack(side="left", padx=6)
-    ttk.Button(btn_frame, text="Debug OCR", command=debug_current).pack(
-        side="left", padx=6
-    )
 
     ttk.Label(
         root,
