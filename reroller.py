@@ -40,8 +40,11 @@ crys_options = defaultdict(list)
 all_possible = set()
 
 SETTINGS_FILE = "settings.json"
-__version__ = "vDev"
-possible_chars = set()
+__version__ = "vDEV"
+
+
+def _normalize(text: str) -> str:
+    return re.sub(r"\s+", "", text).lower()
 
 
 def resource_path(relative_path):
@@ -59,18 +62,19 @@ with open(resource_path("getSelectionAbilityMstList.json"), "r", encoding="utf-8
                 c["description"]
             )
             all_possible.add(c["description"])
-            possible_chars.update(c["description"])
 
+_normalised_to_canonical: dict[str, str] = {_normalize(s): s for s in all_possible}
+_normalised_to_canonical["increaseshprecoveryamountby."] = (
+    "Increases HP recovery amount by 8%."
+)
+_normalised_to_canonical["???"] = "???"
+
+possible_chars = set("".join(_normalised_to_canonical.values()))
 possible_chars.remove(" ")
+
 TARGET_WINDOW = "MadokaExedra"
 TESS_CONFIG = (
     "--oem 3 --psm 6 " + "-c tessedit_char_whitelist=" + "".join(sorted(possible_chars))
-)
-_normalised_to_canonical: dict[str, str] = {
-    re.sub(r"\s+", "", s).lower(): s for s in all_possible
-}
-_normalised_to_canonical["increaseshprecoveryamountby."] = (
-    "Increases HP recovery amount by 8%."
 )
 
 pydirectinput.FAILSAFE = False
@@ -103,6 +107,33 @@ def get_game_window():
     if not wins:
         raise RuntimeError("Game window not found")
     return wins[0]
+
+
+def is_on_reroll_screen(win, debug_log) -> bool:
+    hwnd = win32gui.FindWindow(None, TARGET_WINDOW)
+    img = _capture_window(hwnd)
+    all_text = _ocr_full_window(
+        img.crop(
+            (
+                0.2 * win.width,
+                0.1 * win.height,
+                0.8 * win.width,
+                0.18 * win.height,
+            )
+        ),
+        debug_log,
+        99,
+    )
+    target = "sePaintDrotorolltheboosteffectsforthefolloinrystalisability"
+
+    return bool(
+        difflib.get_close_matches(
+            target,
+            all_text,
+            n=1,
+            cutoff=0.75,
+        )
+    )
 
 
 def _capture_window(hwnd: int) -> Image.Image:
@@ -140,10 +171,6 @@ def _capture_window(hwnd: int) -> Image.Image:
     return img
 
 
-def _normalize(text: str) -> str:
-    return re.sub(r"\s+", "", text).lower()
-
-
 def _strip_noise_prefix(text: str) -> str:
     tokens = text.split()
     for i, token in enumerate(tokens):
@@ -152,7 +179,7 @@ def _strip_noise_prefix(text: str) -> str:
     return text
 
 
-def _ocr_full_window(img_colour: Image.Image, debug_log: bool) -> list[str]:
+def _ocr_full_window(img_colour: Image.Image, debug_log: bool, idx: int) -> list[str]:
     arr = np.array(img_colour)
     gray = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
     gray = cv2.resize(gray, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
@@ -162,7 +189,7 @@ def _ocr_full_window(img_colour: Image.Image, debug_log: bool) -> list[str]:
     for variant_img, name in ((arr, "colour"), (gray, "gray"), (bw, "bw")):
         os.makedirs("debug", exist_ok=True)
         if debug_log:
-            Image.fromarray(variant_img).save(f"debug/{name}.png")
+            Image.fromarray(variant_img).save(f"debug/{name}_{idx}.png")
         try:
             data = pytesseract.image_to_data(
                 variant_img,
@@ -179,61 +206,90 @@ def _ocr_full_window(img_colour: Image.Image, debug_log: bool) -> list[str]:
     return results
 
 
-def _find_abilities_in_text(ocr_text: str) -> list[str | None]:
+def _find_ability_in_text(ocr_text: str) -> tuple[str | None, float]:
     norm_text = _normalize(ocr_text)
-    found: list[str] = []
 
     for norm_ability, canonical in _normalised_to_canonical.items():
-        if norm_ability in norm_text and canonical not in found:
-            found.append(canonical)
-        if len(found) >= 3:
-            return found[:3]
+        if norm_ability in norm_text:
+            return canonical, 1.0
+
+    best_match = None
+    best_score = 0.0
 
     for line in ocr_text.splitlines():
-        logger.debug("Checking line for matches: '%s'", line)
         line = _strip_noise_prefix(line.strip())
+
         if not line:
             continue
-        matches = difflib.get_close_matches(line, all_possible, n=1, cutoff=0.65)
-        if matches and matches[0] not in found:
-            found.append(matches[0])
-        if len(found) >= 3:
-            break
 
-    while len(found) < 3:
-        found.append(None)
-    return found[:3]
+        logger.debug("Checking line for matches: '%s'", line)
+
+        match = difflib.get_close_matches(line, all_possible, n=1, cutoff=0.65)
+
+        if not match:
+            continue
+
+        candidate = match[0]
+        score = difflib.SequenceMatcher(None, line, candidate).ratio()
+
+        if score > best_score:
+            best_match = candidate
+            best_score = score
+
+    if best_score >= 0.65:
+        return best_match, best_score
+
+    return None, 0.0
 
 
-def fetch_current_crys_values(win, debug_log: bool) -> list[str | None]:
+def fetch_current_crys_values(
+    win, debug_log: bool, check_locked: bool
+) -> list[str | None]:
     hwnd = win32gui.FindWindow(None, TARGET_WINDOW)
     if not hwnd:
         logger.error("Game window handle not found")
         return [None, None, None]
 
     img = _capture_window(hwnd)
-    crop = img.crop(
-        (
-            0.25 * win.width,
-            0.28 * win.height,
-            0.48 * win.width,
-            0.5 * win.height,
+    current_values = []
+    for i in range(3):
+        crop = img.crop(
+            (
+                (0.51 if check_locked else 0.25) * win.width,
+                (0.08 * i + 0.28) * win.height,
+                (0.73 if check_locked else 0.48) * win.width,
+                (0.08 * i + 0.35) * win.height,
+            )
         )
-    )
-    variants = _ocr_full_window(crop, debug_log)
+        current_values.append(_ocr_slot(crop, debug_log, 10 + i if check_locked else i))
+    return current_values
+
+
+def _ocr_slot(img: Image.Image, debug_log: bool, idx: int) -> str | None:
+    variants = _ocr_full_window(img, debug_log, idx)
     variant_names = ("colour", "gray", "bw")
 
-    best_result = [None, None, None]
-    best_count = -1
+    best_result = None
+    best_score = 0.0
 
     for name, text in zip(variant_names, variants):
         logger.debug("[%s] OCR text:\n%s", name, text)
-        result = _find_abilities_in_text(text)
-        hits = sum(1 for r in result if r is not None)
-        logger.debug("[%s] parsed → %s (%d hits)", name, result, hits)
-        if hits > best_count:
-            best_count = hits
+
+        result, score = _find_ability_in_text(text)
+
+        logger.debug(
+            "[%s] parsed → %s (score=%.3f)",
+            name,
+            result,
+            score,
+        )
+
+        if score > best_score:
             best_result = result
+            best_score = score
+
+        if score >= 1.0:
+            return result
 
     return best_result
 
@@ -260,6 +316,7 @@ def reroll(
     win,
     targets: list[str],
     match_mode: str,
+    should_permalock: bool,
     required_count: int,
     stop_flag: threading.Event,
     roll_log_path: str | None,
@@ -270,39 +327,25 @@ def reroll(
 
     logger.info("Starting reroll | mode=%s | targets: %s", match_mode, list(target_set))
     logger.info("Press Ctrl+Shift+Q to force-quit at any time.")
-
+    already_locked_targets = []
     while not stop_flag.is_set():
-        pyautogui.sleep(0.3)
+        pyautogui.sleep(0.2)
+        if not is_on_reroll_screen(win, debug_log):
+            logger.info("Not on reroll screen")
+            if stop_flag.is_set():
+                break
+            click_reroll_button(win)
+            continue
 
-        if stop_flag.is_set():
-            break
-
-        current_values = fetch_current_crys_values(win, debug_log)
+        current_values = fetch_current_crys_values(win, debug_log, False)
 
         if None in current_values:
-            if current_values.count(None) >= 2:
-                # Not on the right screen
-                click_reroll_button(win)
             logger.warning(
                 "Roll #%d — could not read all substats (%s), retrying…",
                 roll_number,
                 current_values,
             )
             continue
-
-        found_targets = [v for v in current_values if v in target_set]
-
-        if match_mode == "AND":
-            success = len(found_targets) >= required_count
-        else:
-            success = len(found_targets) >= 1
-
-        logger.info(
-            "Roll #%d: %s | %s",
-            roll_number,
-            current_values,
-            "HIT" if success else "miss",
-        )
 
         if roll_log_path:
             entry = {
@@ -315,13 +358,60 @@ def reroll(
             with open(roll_log_path, "a", encoding="utf-8") as fh:
                 fh.write(json.dumps(entry) + "\n")
 
-        if success:
-            logger.info("Target reached after %d rolls — stopping.", roll_number)
-            return
+        found_targets = [v for v in current_values if v in target_set]
 
+        logger.info(
+            "Roll #%d — current values: %s | found targets: %s",
+            roll_number,
+            current_values,
+            found_targets,
+        )
+
+        if found_targets:
+            if match_mode == "OR":
+                logger.info("Found one target in OR mode, stopping")
+                return
+            if match_mode == "AND":
+                if len(found_targets) == required_count:
+                    logger.info("Found all targets in AND mode, stopping")
+                    return
+
+                if should_permalock:
+                    if len(already_locked_targets) < 3:
+                        already_locked_targets = fetch_current_crys_values(
+                            win, debug_log, True
+                        )
+                    for i, v in enumerate(current_values):
+                        if v in target_set and v not in already_locked_targets:
+                            logger.info(
+                                "Permalock enabled — permalocking %s at index %d", v, i
+                            )
+
+                            click(
+                                win.left + 0.85 * win.width,
+                                win.top + (0.08 * i + 0.3) * win.height,
+                            )
+                            input("Proceed?")
+
+                            click_reroll_button(win)
+
+                            click(
+                                win.left + 0.6 * win.width, win.top + 0.75 * win.height
+                            )
+                            pyautogui.sleep(3)
+                            already_locked_targets = fetch_current_crys_values(
+                                win, debug_log, True
+                            )
+
+        if stop_flag.is_set():
+            break
         roll_number += 1
-        logger.info("Roll #%d — clicking reroll…", roll_number)
         click_reroll_button(win)
+        pyautogui.sleep(0.75)
+        click_reroll_button(win)
+        pyautogui.sleep(0.1)
+        click_reroll_button(win)
+        pyautogui.sleep(0.1)
 
     logger.info("Reroll stopped by user after %d rolls.", roll_number)
 
@@ -337,10 +427,7 @@ def check_git_version_match():
             version = data["tag_name"].lstrip("version-")
             if f"v{version}" != __version__:
                 return version
-                logger.warning(
-                    "New version available: v%s, you are on %s", version, __version__
-                )
-    except Exception as e:
+    except Exception:
         logger.error("Failed to get git version")
     return False
 
@@ -361,7 +448,12 @@ def main():
 
     root = tk.Tk()
     root.title("Exedra Auto Reroller")
-    root.geometry("340x500+50+50")
+
+    if new_version := check_git_version_match():
+        height = 540
+    else:
+        height = 480
+    root.geometry(f"340x{height}+50+50")
     root.resizable(False, False)
 
     dropdown_options = [""] + list(crys_options.keys())  # "" = clear/empty option
@@ -378,6 +470,7 @@ def main():
             "match_mode": match_mode_var.get(),
             "should_log": should_log_var.get(),
             "debug_log": debug_log_var.get(),
+            "permalock_once_reached": permalock_var.get(),
             "targets": [
                 {
                     "enabled": check_vars[i].get(),
@@ -470,6 +563,23 @@ def main():
         value="AND",
         command=persist_settings,
     ).pack(side="left", padx=4)
+    permalock_var = tk.BooleanVar(value=settings.get("permalock_once_reached", False))
+    permalock_check = ttk.Checkbutton(
+        root,
+        text="Permalock options underways",
+        variable=permalock_var,
+        command=persist_settings,
+    )
+    permalock_check.pack(anchor="w", padx=28, pady=(2, 0))
+
+    def update_permalock_visibility(*_):
+        if match_mode_var.get() == "AND":
+            permalock_check.state(["!disabled"])
+        else:
+            permalock_check.state(["disabled"])
+
+    match_mode_var.trace_add("write", update_permalock_visibility)
+    update_permalock_visibility()
 
     ttk.Separator(root, orient="horizontal").pack(fill="x", padx=10, pady=8)
 
@@ -542,6 +652,7 @@ def main():
                 win,
                 targets,
                 match_mode,
+                permalock_var.get(),
                 required_count,
                 stop_flag,
                 roll_log_path,
@@ -582,7 +693,7 @@ def main():
         foreground="black",
         font=("TkDefaultFont", 10),
     ).pack(pady=(8, 0))
-    if new_version := check_git_version_match():
+    if new_version:
         ttk.Label(
             root,
             text=f"Version {new_version} available",
