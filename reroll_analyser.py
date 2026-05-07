@@ -1,6 +1,4 @@
-import argparse
 import json
-import sys
 from collections import defaultdict
 from pathlib import Path
 
@@ -122,287 +120,130 @@ STAT_CATEGORIES = {
     ],
 }
 
-ALL_STATS = set()
-
 VALUE_TO_CATEGORY = {}
-VALUE_TO_TIER = {}
-
-for category, values in STAT_CATEGORIES.items():
-    for tier, value in enumerate(values, start=1):
-        ALL_STATS.add(value)
-        VALUE_TO_CATEGORY[value] = category
-        VALUE_TO_TIER[value] = tier
+for cat, vals in STAT_CATEGORIES.items():
+    for v in vals:
+        VALUE_TO_CATEGORY[v] = cat
 
 
-def pct(v: float) -> str:
-    return f"{v * 100:.2f}%"
+def cat(v):
+    return VALUE_TO_CATEGORY[v]
 
 
-def categorize(value: str) -> str:
-    return VALUE_TO_CATEGORY[value]
+def pct(x):
+    return f"{x*100:.2f}%"
 
 
-def load_jsonl_files(logs_dir: str):
-    rolls = []
+def load_runs():
+    runs = []
 
-    files = sorted(Path(logs_dir).glob("*.jsonl"))
+    for f in sorted(Path("reroll_logs").glob("*.jsonl")):
+        with open(f, "r", encoding="utf-8") as fh:
+            runs.append([json.loads(line) for line in fh if line.strip()])
 
-    if not files:
-        print(f"No .jsonl files found in {logs_dir}")
-        sys.exit(1)
-
-    for file in files:
-        with open(file, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-
-                if not line:
-                    continue
-
-                try:
-                    rolls.append(json.loads(line))
-                except Exception as e:
-                    print(f"Skipping invalid line in {file}: {e}")
-
-    return rolls
+    return runs
 
 
 def is_duplicate(a, b):
     return a["s1"] == b["s1"] and a["s2"] == b["s2"] and a["s3"] == b["s3"]
 
 
-def detect_locked_slots(prev2, prev1, curr):
-    locked = []
-
-    for slot in ("s1", "s2", "s3"):
-        if prev2[slot] == prev1[slot] == curr[slot]:
-            locked.append(slot)
-
+def detect_locked(a, b, c):
+    locked = set()
+    for s in ("s1", "s2", "s3"):
+        if a[s] == b[s] == c[s]:
+            locked.add(cat(c[s]))
     return locked
 
 
-def clean_rolls(raw_rolls):
+def process_run(run):
+    no_dupes = [run[0]]
+    for i in range(1, len(run)):
+        if not is_duplicate(run[i - 1], run[i]):
+            no_dupes.append(run[i])
+    if len(no_dupes) < 3:
+        return []
+
     cleaned = []
+    no_dupes[0]["locked"] = detect_locked(no_dupes[0], no_dupes[1], no_dupes[2])
+    cleaned.append(no_dupes[0])
+    no_dupes[1]["locked"] = detect_locked(no_dupes[0], no_dupes[1], no_dupes[2])
+    cleaned.append(no_dupes[1])
 
-    for roll in raw_rolls:
-        if cleaned and is_duplicate(cleaned[-1], roll):
-            continue
-
-        roll = dict(roll)
-
-        if len(cleaned) < 2:
-            roll["locked_slots"] = []
-            roll["free_slots"] = ["s1", "s2", "s3"]
-        else:
-            locked_slots = detect_locked_slots(
-                cleaned[-2],
-                cleaned[-1],
-                roll,
-            )
-
-            free_slots = [s for s in ("s1", "s2", "s3") if s not in locked_slots]
-
-            roll["locked_slots"] = locked_slots
-            roll["free_slots"] = free_slots
-
-        cleaned.append(roll)
+    for i in range(2, len(no_dupes)):
+        no_dupes[i]["locked"] = detect_locked(
+            no_dupes[i - 2], no_dupes[i - 1], no_dupes[i]
+        )
+        cleaned.append(no_dupes[i])
 
     return cleaned
 
 
-class SlotStats:
-    def __init__(self):
-        self.total = 0
-
-        self.value_counts = defaultdict(int)
-        self.category_counts = defaultdict(int)
-        self.tier_counts = defaultdict(int)
-
-    def record(self, value):
-        cat = categorize(value)
-        tier = VALUE_TO_TIER[value]
-
-        self.total += 1
-
-        self.value_counts[value] += 1
-        self.category_counts[cat] += 1
-        self.tier_counts[(cat, tier)] += 1
-
-
-def compute_stats(cleaned_rolls):
-    slot_stats = {
-        "s1": SlotStats(),
-        "s2": SlotStats(),
-        "s3": SlotStats(),
-    }
-
+def compute(runs):
+    state_counts = defaultdict(int)
+    state_value_counts = defaultdict(lambda: defaultdict(int))
     global_value_counts = defaultdict(int)
-    global_category_counts = defaultdict(int)
 
-    total_free_slots = 0
+    total_values = 0
 
-    for roll in cleaned_rolls:
-        for slot in roll["free_slots"]:
-            value = roll[slot]
-            cat = categorize(value)
+    for run in runs:
+        cleaned = process_run(run)
 
-            slot_stats[slot].record(value)
+        for run_state in cleaned:
+            state = frozenset(run_state["locked"])
+            state_counts[state] += 1
 
-            global_value_counts[value] += 1
-            global_category_counts[cat] += 1
+            for slot in ("s1", "s2", "s3"):
+                stat = run_state[slot]
 
-            total_free_slots += 1
+                if cat(stat) in state:
+                    continue
 
-    return (
-        slot_stats,
-        global_value_counts,
-        global_category_counts,
-        total_free_slots,
-    )
+                state_value_counts[state][stat] += 1
+                global_value_counts[stat] += 1
+                total_values += 1
+
+    return state_counts, state_value_counts, global_value_counts, total_values
 
 
-def print_report(
-    cleaned_rolls,
-    slot_stats,
-    global_value_counts,
-    global_category_counts,
-    total_free_slots,
-):
-    print("=" * 70)
-    print("REROLL ANALYSIS")
-    print("=" * 70)
+def compute_marginal(state_counts, state_value_counts, total_values):
+    marginal = defaultdict(float)
 
-    print(f"Valid rolls: {len(cleaned_rolls)}")
-    print(f"Total free slots analyzed: {total_free_slots}")
+    total_states = sum(state_counts.values())
 
-    locked_rolls = sum(1 for r in cleaned_rolls if r["locked_slots"])
+    for state, vcounts in state_value_counts.items():
+        ps = state_counts[state] / total_states
 
-    print(f"Rolls with locked slots: {locked_rolls}")
-
-    print("\nGLOBAL CATEGORY DISTRIBUTION")
-    print("-" * 70)
-
-    for cat, count in sorted(
-        global_category_counts.items(),
-        key=lambda x: -x[1],
-    ):
-        print(f"{pct(count / total_free_slots):>8} " f"({count:>5}x) " f"{cat}")
-
-    print("\nGLOBAL EXACT VALUE DISTRIBUTION")
-    print("-" * 70)
-
-    for value, count in sorted(
-        global_value_counts.items(),
-        key=lambda x: -x[1],
-    ):
-        cat = categorize(value)
-
-        print(
-            f"{pct(count / total_free_slots):>8} " f"({count:>5}x) " f"[{cat}] {value}"
-        )
-
-    print("\nTIER DISTRIBUTION WITHIN CATEGORY")
-    print("-" * 70)
-
-    for category, values in STAT_CATEGORIES.items():
-        total_cat = global_category_counts.get(category, 0)
-
-        if total_cat == 0:
+        total_in_state = sum(vcounts.values())
+        if total_in_state == 0:
             continue
 
-        print(f"\n{category}")
+        for v, cnt in vcounts.items():
+            pv_given_s = cnt / total_in_state
+            marginal[v] += pv_given_s * ps
 
-        for value in values:
-            count = global_value_counts.get(value, 0)
-
-            if count == 0:
-                continue
-
-            print(f"    {pct(count / total_cat):>8} " f"({count:>5}x) " f"{value}")
-
-    print("\nPER SLOT DISTRIBUTION")
-    print("-" * 70)
-
-    for slot in ("s1", "s2", "s3"):
-        stats = slot_stats[slot]
-
-        print(f"\n{slot} ({stats.total} free observations)")
-
-        for cat, count in sorted(
-            stats.category_counts.items(),
-            key=lambda x: -x[1],
-        ):
-            print(f"    {pct(count / stats.total):>8} " f"({count:>5}x) " f"{cat}")
+    return marginal
 
 
-def print_search(query, global_value_counts, global_category_counts, total):
-    q = query.lower()
+def report(state_counts, global_counts, marginal):
+    print("LOCK STATE DIST:")
+    for s, c in sorted(state_counts.items(), key=lambda x: -x[1]):
+        print(f"{set(s) if s else 'NONE'}: {c}")
 
-    print("\nSEARCH RESULTS")
-    print("-" * 70)
+    print("\nGLOBAL RAW (biased baseline)")
+    for v, c in sorted(global_counts.items(), key=lambda x: -x[1]):
+        print(f"{pct(c/sum(global_counts.values()))} {v}")
 
-    found = False
-
-    for cat, count in global_category_counts.items():
-        if q in cat.lower():
-            found = True
-
-            print(
-                f"[CATEGORY] {cat}\n"
-                f"    Probability: {pct(count / total)}\n"
-                f"    Occurrences: {count}"
-            )
-
-    for value, count in global_value_counts.items():
-        if q in value.lower():
-            found = True
-
-            print(
-                f"[VALUE] {value}\n"
-                f"    Probability: {pct(count / total)}\n"
-                f"    Occurrences: {count}"
-            )
-
-    if not found:
-        print("No matches found.")
+    print("\nMARGINALIZED TRUE PROBABILITY ESTIMATE")
+    for v, p in sorted(marginal.items(), key=lambda x: -x[1]):
+        print(f"{pct(p)} {v}")
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--logs-dir", default="reroll_logs")
-    parser.add_argument("--search", default=None)
-    args = parser.parse_args()
-
-    raw_rolls = load_jsonl_files(args.logs_dir)
-
-    print(f"Loaded {len(raw_rolls)} raw rolls.")
-
-    cleaned_rolls = clean_rolls(raw_rolls)
-
-    print(f"Removed " f"{len(raw_rolls) - len(cleaned_rolls)} duplicate rolls.")
-
-    (
-        slot_stats,
-        global_value_counts,
-        global_category_counts,
-        total_free_slots,
-    ) = compute_stats(cleaned_rolls)
-
-    print_report(
-        cleaned_rolls,
-        slot_stats,
-        global_value_counts,
-        global_category_counts,
-        total_free_slots,
-    )
-
-    if args.search:
-        print_search(
-            args.search,
-            global_value_counts,
-            global_category_counts,
-            total_free_slots,
-        )
+    runs = load_runs()
+    state_counts, state_value_counts, global_counts, total = compute(runs)
+    marginal = compute_marginal(state_counts, state_value_counts, total)
+    report(state_counts, global_counts, marginal)
 
 
 if __name__ == "__main__":
