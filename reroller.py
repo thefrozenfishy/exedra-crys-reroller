@@ -21,6 +21,7 @@ import pytesseract
 import win32gui
 import win32ui
 from PIL import Image
+import ctypes
 
 nice_names = {
     31: "Increases max HP",
@@ -74,8 +75,7 @@ logger.addHandler(console_handler)
 
 TARGET_WINDOW = "MadokaExedra"
 
-REROLL_SETTLE_S = 3.0
-LOOP_SLEEP_S = 0.5
+SLEEP_DUR = 2
 
 
 def get_game_window():
@@ -124,16 +124,6 @@ def _capture_window(hwnd: int) -> Image.Image:
     win32gui.ReleaseDC(hwnd, hwnd_dc)
 
     return img
-
-
-def _save_debug_window(img: Image.Image, tag: str = "window"):
-    os.makedirs("debug", exist_ok=True)
-    arr = np.array(img)
-    gray = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
-    _, bw = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    img.save(f"debug/{tag}.png")
-    Image.fromarray(gray).save(f"debug/{tag}_gray.png")
-    Image.fromarray(bw).save(f"debug/{tag}_bw.png")
 
 
 def _normalize(text: str) -> str:
@@ -235,13 +225,22 @@ def fetch_current_crys_values(win) -> list[str | None]:
     return best_result
 
 
-def _click_reroll_button(win):
-    """Click the Reroll / Roll Again button at its fixed relative position."""
-    x = int(win.left + 0.6 * win.width)
-    y = int(win.top + 0.85 * win.height)
-    pydirectinput.click(x, y)
-    pyautogui.sleep(0.1)
-    pydirectinput.click(x, y)
+def click(x: float | int, y: float | int):
+    hwnd = win32gui.FindWindow(None, TARGET_WINDOW)
+    if not hwnd:
+        return
+    prev_hwnd = win32gui.GetForegroundWindow()
+    ctypes.windll.user32.SetForegroundWindow(hwnd)
+    pyautogui.sleep(0.05)  # let it actually activate
+    curr = pyautogui.position()
+    pydirectinput.click(int(x), int(y))
+    pyautogui.moveTo(curr)
+    pyautogui.sleep(0.05)
+    ctypes.windll.user32.SetForegroundWindow(prev_hwnd)
+
+
+def click_reroll_button(win) -> None:
+    click(win.left + 0.6 * win.width, win.top + 0.85 * win.height)
 
 
 def reroll(
@@ -271,8 +270,8 @@ def reroll(
     while not stop_flag.is_set():
         roll_number += 1
         logger.info("Roll #%d — clicking reroll…", roll_number)
-        _click_reroll_button(win)
-        pyautogui.sleep(REROLL_SETTLE_S)
+        click_reroll_button(win)
+        pyautogui.sleep(SLEEP_DUR)
 
         if stop_flag.is_set():
             break
@@ -285,12 +284,10 @@ def reroll(
                 roll_number,
                 current_values,
             )
-            pyautogui.sleep(LOOP_SLEEP_S)
+            pyautogui.sleep(SLEEP_DUR)
             continue
 
-        # --- AND / OR evaluation (mirrors AHK CheckForTargets) ---
         found_targets = [v for v in current_values if v in target_set]
-        missing_targets = [t for t in targets if t not in current_values]
 
         if match_mode == "AND":
             success = len(found_targets) >= required_count
@@ -301,7 +298,7 @@ def reroll(
             "Roll #%d: %s | %s",
             roll_number,
             current_values,
-            "✓ HIT" if success else "✗ miss",
+            "HIT" if success else "miss",
         )
 
         # --- Append to roll log file ---
@@ -320,7 +317,7 @@ def reroll(
             logger.info("✓ Target reached after %d rolls — stopping.", roll_number)
             return
 
-        pyautogui.sleep(LOOP_SLEEP_S)
+        pyautogui.sleep(SLEEP_DUR)
 
     logger.info("Reroll stopped by user after %d rolls.", roll_number)
 
@@ -487,12 +484,25 @@ def main():
         side="left", padx=6
     )
     ttk.Button(btn_frame, text="Stop", command=stop_reroll).pack(side="left", padx=6)
+    keyboard.add_hotkey("ctrl+shift+e", lambda: stop_reroll)
 
     ttk.Label(
         root,
         text="Ctrl+Shift+Q = force quit at any time",
         foreground="gray",
         font=("TkDefaultFont", 8),
+    ).pack(pady=(8, 0))
+    ttk.Label(
+        root,
+        text="Ctrl+Shift+E = stop reroll",
+        foreground="gray",
+        font=("TkDefaultFont", 8),
+    ).pack(pady=(8, 0))
+    ttk.Label(
+        root,
+        text="Current version: 1.0.0",
+        foreground="black",
+        font=("TkDefaultFont", 10),
     ).pack(pady=(8, 0))
 
     root.mainloop()
