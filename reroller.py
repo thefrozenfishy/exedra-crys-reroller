@@ -40,7 +40,8 @@ crys_options = defaultdict(list)
 all_possible = set()
 
 SETTINGS_FILE = "settings.json"
-__version__ = "vDEV"
+__version__ = "vDev"
+possible_chars = set()
 
 
 def resource_path(relative_path):
@@ -58,10 +59,19 @@ with open(resource_path("getSelectionAbilityMstList.json"), "r", encoding="utf-8
                 c["description"]
             )
             all_possible.add(c["description"])
+            possible_chars.update(c["description"])
 
+possible_chars.remove(" ")
+TARGET_WINDOW = "MadokaExedra"
+TESS_CONFIG = (
+    "--oem 3 --psm 6 " + "-c tessedit_char_whitelist=" + "".join(sorted(possible_chars))
+)
 _normalised_to_canonical: dict[str, str] = {
     re.sub(r"\s+", "", s).lower(): s for s in all_possible
 }
+_normalised_to_canonical["increaseshprecoveryamountby."] = (
+    "Increases HP recovery amount by 8%."
+)
 
 pydirectinput.FAILSAFE = False
 keyboard.add_hotkey("ctrl+shift+q", lambda: os._exit(0))
@@ -73,10 +83,6 @@ logger.setLevel(logging.INFO)
 console_handler = logging.StreamHandler()
 console_handler.setFormatter(log_formatter)
 logger.addHandler(console_handler)
-
-TARGET_WINDOW = "MadokaExedra"
-
-SLEEP_DUR = 1
 
 
 def load_settings() -> dict:
@@ -146,15 +152,22 @@ def _strip_noise_prefix(text: str) -> str:
     return text
 
 
-def _ocr_full_window(img_colour: Image.Image) -> list[str]:
+def _ocr_full_window(img_colour: Image.Image, debug_log: bool) -> list[str]:
     arr = np.array(img_colour)
     gray = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
+    gray = cv2.resize(gray, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+    gray = cv2.GaussianBlur(gray, (3, 3), 0)
     _, bw = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     results = []
-    for variant_img in (arr, gray, bw):
+    for variant_img, name in ((arr, "colour"), (gray, "gray"), (bw, "bw")):
+        os.makedirs("debug", exist_ok=True)
+        if debug_log:
+            Image.fromarray(variant_img).save(f"debug/{name}.png")
         try:
             data = pytesseract.image_to_data(
-                variant_img, output_type=pytesseract.Output.DICT
+                variant_img,
+                output_type=pytesseract.Output.DICT,
+                config=TESS_CONFIG,
             )
             raw = re.sub(r" +", " ", " ".join(data["text"])).strip()
             results.append(raw)
@@ -192,14 +205,22 @@ def _find_abilities_in_text(ocr_text: str) -> list[str | None]:
     return found[:3]
 
 
-def fetch_current_crys_values(win) -> list[str | None]:
+def fetch_current_crys_values(win, debug_log: bool) -> list[str | None]:
     hwnd = win32gui.FindWindow(None, TARGET_WINDOW)
     if not hwnd:
         logger.error("Game window handle not found")
         return [None, None, None]
 
     img = _capture_window(hwnd)
-    variants = _ocr_full_window(img)
+    crop = img.crop(
+        (
+            0.25 * win.width,
+            0.28 * win.height,
+            0.48 * win.width,
+            0.5 * win.height,
+        )
+    )
+    variants = _ocr_full_window(crop, debug_log)
     variant_names = ("colour", "gray", "bw")
 
     best_result = [None, None, None]
@@ -242,6 +263,7 @@ def reroll(
     required_count: int,
     stop_flag: threading.Event,
     roll_log_path: str | None,
+    debug_log: bool = False,
 ):
     target_set = set(targets)
     roll_number = 0
@@ -255,19 +277,18 @@ def reroll(
         if stop_flag.is_set():
             break
 
-        current_values = fetch_current_crys_values(win)
+        current_values = fetch_current_crys_values(win, debug_log)
 
         if None in current_values:
+            if current_values.count(None) >= 2:
+                # Not on the right screen
+                click_reroll_button(win)
             logger.warning(
                 "Roll #%d — could not read all substats (%s), retrying…",
                 roll_number,
                 current_values,
             )
             continue
-
-        roll_number += 1
-        logger.info("Roll #%d — clicking reroll…", roll_number)
-        click_reroll_button(win)
 
         found_targets = [v for v in current_values if v in target_set]
 
@@ -297,6 +318,10 @@ def reroll(
         if success:
             logger.info("Target reached after %d rolls — stopping.", roll_number)
             return
+
+        roll_number += 1
+        logger.info("Roll #%d — clicking reroll…", roll_number)
+        click_reroll_button(win)
 
     logger.info("Reroll stopped by user after %d rolls.", roll_number)
 
@@ -336,7 +361,7 @@ def main():
 
     root = tk.Tk()
     root.title("Exedra Auto Reroller")
-    root.geometry("340x600+50+50")
+    root.geometry("340x500+50+50")
     root.resizable(False, False)
 
     dropdown_options = [""] + list(crys_options.keys())  # "" = clear/empty option
@@ -513,7 +538,15 @@ def main():
         stop_flag.clear()
         reroll_thread = threading.Thread(
             target=reroll,
-            args=(win, targets, match_mode, required_count, stop_flag, roll_log_path),
+            args=(
+                win,
+                targets,
+                match_mode,
+                required_count,
+                stop_flag,
+                roll_log_path,
+                debug_log_var.get(),
+            ),
             daemon=True,
         )
         reroll_thread.start()

@@ -1,22 +1,22 @@
 {
-  "match_mode": "OR",
+  "match_mode": "AND",
   "should_log": true,
   "debug_log": true,
   "targets": [
     {
       "enabled": true,
       "category": "Increases critical rate",
-      "min_value": "Increases critical rate by 3.5%."
+      "min_value": "Increases critical rate by 5%."
     },
     {
       "enabled": true,
       "category": "Increases critical DMG",
-      "min_value": "Increases critical DMG by 4.5%."
+      "min_value": "Increases critical DMG by 10%."
     },
     {
-      "enabled": false,
-      "category": "",
-      "min_value": ""
+      "enabled": true,
+      "category": "Increases SPD",
+      "min_value": "Increases SPD by 4."
     }
   ]
 }

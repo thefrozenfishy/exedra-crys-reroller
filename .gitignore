@@ -4,3 +4,4 @@ build
 debug
 reroll_logs
 dist
+settings.json
