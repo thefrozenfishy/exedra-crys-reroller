@@ -2,6 +2,8 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
+import pandas as pd
+
 STAT_CATEGORIES = {
     "Max HP": [
         "Max HP +40",
@@ -225,6 +227,27 @@ def compute_marginal(state_counts, state_value_counts, total_values):
     return marginal
 
 
+def export_to_grid_excel(marginal, filename="stat_heatmap.xlsx"):
+    # Initialize a 10-tier grid for all categories
+    categories = list(STAT_CATEGORIES.keys())
+    # Create an empty DataFrame: Rows = Tiers (1-10), Columns = Categories
+    grid = pd.DataFrame(0.0, index=range(1, 11), columns=categories)
+
+    for val, prob in marginal.items():
+        category = cat(val)
+        # Determine tier based on position in the original STAT_CATEGORIES list
+        try:
+            tier = STAT_CATEGORIES[category].index(val) + 1
+            grid.at[tier, category] = prob
+        except ValueError:
+            # Handle the "..." or missing values gracefully
+            continue
+
+    # Export with styling
+    grid.to_excel(filename)
+    print(f"Heatmap exported to {filename}")
+
+
 def report(state_counts, global_counts, marginal):
     print(f"Valid rolls: {sum(s for s in state_counts.values())}")
     print(
@@ -251,6 +274,7 @@ def main():
     state_counts, state_value_counts, global_counts, total = compute(runs)
     marginal = compute_marginal(state_counts, state_value_counts, total)
     report(state_counts, global_counts, marginal)
+    export_to_grid_excel(marginal, "stat_heatmap.xlsx")
 
 
 if __name__ == "__main__":

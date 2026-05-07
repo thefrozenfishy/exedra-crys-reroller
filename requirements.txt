@@ -8,3 +8,5 @@ pyinstaller
 keyboard
 pywin32
 requests
+pandas 
+openpyxl
