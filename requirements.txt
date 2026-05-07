@@ -1,0 +1,9 @@
+pytesseract
+opencv-python
+numpy
+pyautogui
+pydirectinput
+pygetwindow
+pyinstaller
+keyboard
+pywin32

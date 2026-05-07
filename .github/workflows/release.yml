@@ -1,0 +1,45 @@
+name: Build and Release EXE
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - getSelectionAbilityMstList.json
+      - reroller.py
+      - requirements.txt
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create tag
+        run: |
+          git -c user.name="${{ github.actor }}" -c user.email="${{ github.actor }}@users.noreply.github.com" tag -a "version-${{ github.run_number }}" -m "version ${{ github.run_number }}"
+          git push origin "version-${{ github.run_number }}"
+
+      - name: Build EXE with PyInstaller
+        run: pyinstaller --add-data "getSelectionAbilityMstList.json:." --onefile --name "reroller-v${{ github.run_number }}" reroller.py
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: version-${{ github.run_number }}
+          files: dist/reroller-v${{ github.run_number }}.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,6 @@
+.venv
+reroller.spec
+build
+debug
+reroll_logs
+dist
