@@ -226,9 +226,16 @@ def compute_marginal(state_counts, state_value_counts, total_values):
 
 
 def report(state_counts, global_counts, marginal):
+    print(f"Valid rolls: {sum(s for s in state_counts.values())}")
+    print(
+        "Total non-locked slots analyzed: {}".format(
+            sum(s * (3 - len(k)) for k, s in state_counts.items())
+        )
+    )
+
     print("LOCK STATE DIST:")
     for s, c in sorted(state_counts.items(), key=lambda x: -x[1]):
-        print(f"{set(s) if s else 'NONE'}: {c}")
+        print(f"{','.join(s) if s else 'NONE'}: {c}")
 
     print("\nGLOBAL RAW (biased baseline)")
     for v, c in sorted(global_counts.items(), key=lambda x: -x[1]):
