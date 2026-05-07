@@ -76,7 +76,9 @@ TARGET_WINDOW = "MadokaExedra"
 TESS_CONFIG = (
     "--oem 3 --psm 6 " + "-c tessedit_char_whitelist=" + "".join(sorted(possible_chars))
 )
-
+REROLL_SCREEN_TEXT = _normalize(
+    "Use Paint Drop to roll the boost effects for the following Crystalis ability."
+)
 pydirectinput.FAILSAFE = False
 keyboard.add_hotkey("ctrl+shift+q", lambda: os._exit(0))
 
@@ -109,10 +111,21 @@ def get_game_window():
     return wins[0]
 
 
+def _ocr_raw(img: Image.Image, debug_log: bool, idx: int) -> str:
+    variant_img, name = _prepare_variants(img)[0]
+
+    return _ocr_image(
+        variant_img,
+        debug_log,
+        idx,
+        name,
+    )
+
+
 def is_on_reroll_screen(win, debug_log) -> bool:
     hwnd = win32gui.FindWindow(None, TARGET_WINDOW)
     img = _capture_window(hwnd)
-    all_text = _ocr_full_window(
+    ocr_text = _ocr_raw(
         img.crop(
             (
                 0.2 * win.width,
@@ -124,16 +137,17 @@ def is_on_reroll_screen(win, debug_log) -> bool:
         debug_log,
         99,
     )
-    target = "sePaintDrotorolltheboosteffectsforthefolloinrystalisability"
 
-    return bool(
-        difflib.get_close_matches(
-            target,
-            all_text,
-            n=1,
-            cutoff=0.75,
-        )
-    )
+    if not ocr_text:
+        return False
+
+    score = difflib.SequenceMatcher(
+        None,
+        REROLL_SCREEN_TEXT,
+        _normalize(ocr_text),
+    ).ratio()
+
+    return score >= 0.75
 
 
 def _capture_window(hwnd: int) -> Image.Image:
@@ -179,31 +193,32 @@ def _strip_noise_prefix(text: str) -> str:
     return text
 
 
-def _ocr_full_window(img_colour: Image.Image, debug_log: bool, idx: int) -> list[str]:
+def _prepare_variants(img_colour: Image.Image):
     arr = np.array(img_colour)
     gray = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
-    gray = cv2.resize(gray, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+    gray = cv2.resize(gray, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
     gray = cv2.GaussianBlur(gray, (3, 3), 0)
     _, bw = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    results = []
-    for variant_img, name in ((arr, "colour"), (gray, "gray"), (bw, "bw")):
-        os.makedirs("debug", exist_ok=True)
-        if debug_log:
-            Image.fromarray(variant_img).save(f"debug/{name}_{idx}.png")
-        try:
-            data = pytesseract.image_to_data(
-                variant_img,
-                output_type=pytesseract.Output.DICT,
-                config=TESS_CONFIG,
-            )
-            raw = re.sub(r" +", " ", " ".join(data["text"])).strip()
-            results.append(raw)
-        except pytesseract.TesseractNotFoundError as e:
-            input(
-                "Tesseract is not in path! Download it and restart your PC and try again..."
-            )
-            raise e
-    return results
+    return [(bw, "bw"), (gray, "gray"), (arr, "colour")]
+
+
+def _ocr_image(variant_img, debug_log: bool, idx: int, name: str) -> str:
+    os.makedirs("debug", exist_ok=True)
+
+    if debug_log:
+        Image.fromarray(variant_img).save(f"debug/{name}_{idx}.png")
+
+    try:
+        raw = pytesseract.image_to_string(
+            variant_img,
+            config=TESS_CONFIG,
+        )
+        return re.sub(r"\s+", " ", raw).strip()
+    except pytesseract.TesseractNotFoundError as e:
+        input(
+            "Tesseract is not in path! Download it, put it in math, restart your PC, and try again!"
+        )
+        raise e
 
 
 def _find_ability_in_text(ocr_text: str) -> tuple[str | None, float]:
@@ -266,13 +281,13 @@ def fetch_current_crys_values(
 
 
 def _ocr_slot(img: Image.Image, debug_log: bool, idx: int) -> str | None:
-    variants = _ocr_full_window(img, debug_log, idx)
-    variant_names = ("colour", "gray", "bw")
-
     best_result = None
     best_score = 0.0
 
-    for name, text in zip(variant_names, variants):
+    for variant_img, name in _prepare_variants(img):
+
+        text = _ocr_image(variant_img, debug_log, idx, name)
+
         logger.debug("[%s] OCR text:\n%s", name, text)
 
         result, score = _find_ability_in_text(text)
@@ -288,7 +303,7 @@ def _ocr_slot(img: Image.Image, debug_log: bool, idx: int) -> str | None:
             best_result = result
             best_score = score
 
-        if score >= 1.0:
+        if score >= 0.95:
             return result
 
     return best_result
