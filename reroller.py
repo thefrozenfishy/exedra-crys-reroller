@@ -10,7 +10,7 @@ import tkinter as tk
 from collections import defaultdict
 from datetime import datetime
 from tkinter import ttk
-
+from requests import get
 import cv2
 import keyboard
 import numpy as np
@@ -18,10 +18,10 @@ import pyautogui
 import pydirectinput
 import pygetwindow
 import pytesseract
+import webbrowser
 import win32gui
 import win32ui
 from PIL import Image
-import ctypes
 
 nice_names = {
     31: "Increases max HP",
@@ -39,13 +39,14 @@ NAME_PREFIXES = {"Increases", "ATK", "DEF", "Max"}
 crys_options = defaultdict(list)
 all_possible = set()
 
+SETTINGS_FILE = "settings.json"
+__version__ = "vDEV"
+
 
 def resource_path(relative_path):
     """Get absolute path to resource."""
     if hasattr(sys, "_MEIPASS"):
-        # PyInstaller temp folder
         return os.path.join(sys._MEIPASS, relative_path)
-
     return os.path.join(os.path.abspath("."), relative_path)
 
 
@@ -75,7 +76,20 @@ logger.addHandler(console_handler)
 
 TARGET_WINDOW = "MadokaExedra"
 
-SLEEP_DUR = 2
+SLEEP_DUR = 1
+
+
+def load_settings() -> dict:
+    try:
+        with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+def save_settings(settings: dict) -> None:
+    with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+        json.dump(settings, f, indent=2)
 
 
 def get_game_window():
@@ -86,11 +100,6 @@ def get_game_window():
 
 
 def _capture_window(hwnd: int) -> Image.Image:
-    """
-    Capture a window using PrintWindow with PW_RENDERFULLCONTENT (0x2).
-    This flag is what makes it work for DirectX / GPU-rendered games where
-    ImageGrab.grab() returns a black rectangle.
-    """
     left, top, right, bottom = win32gui.GetWindowRect(hwnd)
     w = right - left
     h = bottom - top
@@ -103,7 +112,6 @@ def _capture_window(hwnd: int) -> Image.Image:
     bmp.CreateCompatibleBitmap(mfc_dc, w, h)
     save_dc.SelectObject(bmp)
 
-    # PW_RENDERFULLCONTENT = 0x2  →  captures GPU-rendered content
     ctypes.windll.user32.PrintWindow(hwnd, save_dc.GetSafeHdc(), 0x2)
 
     bmp_info = bmp.GetInfo()
@@ -139,10 +147,6 @@ def _strip_noise_prefix(text: str) -> str:
 
 
 def _ocr_full_window(img_colour: Image.Image) -> list[str]:
-    """
-    Run Tesseract on colour, grayscale, and Otsu-binarised variants of the
-    full captured window image.
-    """
     arr = np.array(img_colour)
     gray = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
     _, bw = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
@@ -156,31 +160,24 @@ def _ocr_full_window(img_colour: Image.Image) -> list[str]:
             results.append(raw)
         except pytesseract.TesseractNotFoundError as e:
             input(
-                "Tesseract is not in path! "
-                "Download it and restart your PC and try again..."
+                "Tesseract is not in path! Download it and restart your PC and try again..."
             )
             raise e
     return results
 
 
 def _find_abilities_in_text(ocr_text: str) -> list[str | None]:
-    """
-    Search a full-window OCR blob for up to 3 canonical ability strings.
-    Pass 1 — exact: normalise the whole blob and check each known ability.
-    Pass 2 — fuzzy: line-by-line difflib fallback.
-    """
     norm_text = _normalize(ocr_text)
     found: list[str] = []
 
-    # Exact pass
     for norm_ability, canonical in _normalised_to_canonical.items():
         if norm_ability in norm_text and canonical not in found:
             found.append(canonical)
         if len(found) >= 3:
             return found[:3]
 
-    # Fuzzy pass on individual lines
     for line in ocr_text.splitlines():
+        logger.debug("Checking line for matches: '%s'", line)
         line = _strip_noise_prefix(line.strip())
         if not line:
             continue
@@ -196,17 +193,12 @@ def _find_abilities_in_text(ocr_text: str) -> list[str | None]:
 
 
 def fetch_current_crys_values(win) -> list[str | None]:
-    """
-    Capture the full game window via PrintWindow (GPU-safe), OCR it across
-    three image variants, and return the best-matched set of 3 substats.
-    """
     hwnd = win32gui.FindWindow(None, TARGET_WINDOW)
     if not hwnd:
         logger.error("Game window handle not found")
         return [None, None, None]
 
     img = _capture_window(hwnd)
-
     variants = _ocr_full_window(img)
     variant_names = ("colour", "gray", "bw")
 
@@ -231,7 +223,7 @@ def click(x: float | int, y: float | int):
         return
     prev_hwnd = win32gui.GetForegroundWindow()
     ctypes.windll.user32.SetForegroundWindow(hwnd)
-    pyautogui.sleep(0.05)  # let it actually activate
+    pyautogui.sleep(0.05)
     curr = pyautogui.position()
     pydirectinput.click(int(x), int(y))
     pyautogui.moveTo(curr)
@@ -245,33 +237,20 @@ def click_reroll_button(win) -> None:
 
 def reroll(
     win,
-    targets: list[str],  # flat list of canonical ability strings to look for
-    match_mode: str,  # "AND" or "OR"
-    required_count: int,  # for AND: all enabled targets; for OR: at least 1
+    targets: list[str],
+    match_mode: str,
+    required_count: int,
     stop_flag: threading.Event,
     roll_log_path: str | None,
 ):
-    """
-    AND mode — every enabled target must appear in the three substat slots.
-    OR  mode — at least one enabled target must appear.
-
-    Each roll result is appended to roll_log_path (one JSON line per roll).
-    """
     target_set = set(targets)
     roll_number = 0
 
-    logger.info(
-        "Starting reroll | mode=%s | targets: %s",
-        match_mode,
-        list(target_set),
-    )
+    logger.info("Starting reroll | mode=%s | targets: %s", match_mode, list(target_set))
     logger.info("Press Ctrl+Shift+Q to force-quit at any time.")
 
     while not stop_flag.is_set():
-        roll_number += 1
-        logger.info("Roll #%d — clicking reroll…", roll_number)
-        click_reroll_button(win)
-        pyautogui.sleep(SLEEP_DUR)
+        pyautogui.sleep(0.3)
 
         if stop_flag.is_set():
             break
@@ -284,14 +263,17 @@ def reroll(
                 roll_number,
                 current_values,
             )
-            pyautogui.sleep(SLEEP_DUR)
             continue
+
+        roll_number += 1
+        logger.info("Roll #%d — clicking reroll…", roll_number)
+        click_reroll_button(win)
 
         found_targets = [v for v in current_values if v in target_set]
 
         if match_mode == "AND":
             success = len(found_targets) >= required_count
-        else:  # OR
+        else:
             success = len(found_targets) >= 1
 
         logger.info(
@@ -301,7 +283,6 @@ def reroll(
             "HIT" if success else "miss",
         )
 
-        # --- Append to roll log file ---
         if roll_log_path:
             entry = {
                 "roll": roll_number,
@@ -314,12 +295,29 @@ def reroll(
                 fh.write(json.dumps(entry) + "\n")
 
         if success:
-            logger.info("✓ Target reached after %d rolls — stopping.", roll_number)
+            logger.info("Target reached after %d rolls — stopping.", roll_number)
             return
 
-        pyautogui.sleep(SLEEP_DUR)
-
     logger.info("Reroll stopped by user after %d rolls.", roll_number)
+
+
+def check_git_version_match():
+    try:
+        git_version = get(
+            "https://api.github.com/repos/thefrozenfishy/exedra-crys-reroller/releases/latest",
+            timeout=10,
+        )
+        if git_version.status_code == 200:
+            data = git_version.json()
+            version = data["tag_name"].lstrip("version-")
+            if f"v{version}" != __version__:
+                return version
+                logger.warning(
+                    "New version available: v%s, you are on %s", version, __version__
+                )
+    except Exception as e:
+        logger.error("Failed to get git version")
+    return False
 
 
 def main():
@@ -334,93 +332,59 @@ def main():
     stop_flag = threading.Event()
     reroll_thread: threading.Thread | None = None
 
-    def start_reroll():
-        nonlocal reroll_thread
-        if reroll_thread and reroll_thread.is_alive():
-            logger.warning("Already running — press Stop first.")
-            return
-
-        # Logging level
-        logger.setLevel(logging.DEBUG if debug_log_var.get() else logging.INFO)
-
-        # Build roll-log file path (one file per session)
-        roll_log_path: str | None = None
-        if should_log_var.get():
-            os.makedirs("reroll_logs", exist_ok=True)
-            roll_log_path = (
-                f"reroll_logs/{datetime.today().strftime('%Y-%m-%dT%H-%M-%S')}.jsonl"
-            )
-            # Also attach a text handler for the verbose logger
-            fh = logging.FileHandler(
-                roll_log_path.replace(".jsonl", "_verbose.txt"), encoding="utf-8"
-            )
-            fh.setFormatter(log_formatter)
-            logger.addHandler(fh)
-            logger.info("Logging rolls to %s", roll_log_path)
-
-        # Collect targets from the three dropdowns + checkboxes
-        targets: list[str] = []
-        for i in range(3):
-            if not check_vars[i].get():  # checkbox unchecked → skip
-                continue
-            category = dropdown_vars[i].get()
-            min_val = min_level_vars[i].get()
-            if not category or not min_val:
-                continue
-            options = crys_options.get(category, [])
-            try:
-                idx = options.index(min_val)
-                targets += options[idx:]  # min_val and anything better
-            except ValueError:
-                pass
-
-        if not targets:
-            logger.warning("No valid targets selected — nothing to reroll for.")
-            return
-
-        match_mode = "AND" if match_mode_var.get() == "AND" else "OR"
-        required_count = len(targets)  # for AND: all must match
-
-        stop_flag.clear()
-        reroll_thread = threading.Thread(
-            target=reroll,
-            args=(win, targets, match_mode, required_count, stop_flag, roll_log_path),
-            daemon=True,
-        )
-        reroll_thread.start()
-
-    def stop_reroll():
-        stop_flag.set()
-        logger.info("Stop requested — will halt after current roll.")
-
-    # ---- build GUI ----
+    settings = load_settings()
 
     root = tk.Tk()
     root.title("Exedra Auto Reroller")
-    root.geometry("340x580+50+50")
+    root.geometry("340x600+50+50")
     root.resizable(False, False)
 
-    dropdown_options = list(crys_options.keys())
+    dropdown_options = [""] + list(crys_options.keys())  # "" = clear/empty option
     dropdown_vars = []
     min_level_vars = []
     min_level_boxes = []
     check_vars = []
 
-    def update_min_level(index):
-        main_value = dropdown_vars[index].get()
-        if main_value:
-            new_values = crys_options[main_value]
-            min_level_boxes[index]["values"] = new_values
-            min_level_boxes[index].set(new_values[-1])
+    saved_targets = settings.get("targets", [{}, {}, {}])
 
-    # --- Three target rows ---
+    def persist_settings(*_):
+        """Write current GUI state to settings.json."""
+        data = {
+            "match_mode": match_mode_var.get(),
+            "should_log": should_log_var.get(),
+            "debug_log": debug_log_var.get(),
+            "targets": [
+                {
+                    "enabled": check_vars[i].get(),
+                    "category": dropdown_vars[i].get(),
+                    "min_value": min_level_vars[i].get(),
+                }
+                for i in range(3)
+            ],
+        }
+        save_settings(data)
+
+    def update_min_level(index, *_):
+        main_value = dropdown_vars[index].get()
+        if main_value and main_value in crys_options:
+            new_values = crys_options[main_value]
+            min_level_boxes[index]["values"] = [""] + new_values
+            min_level_boxes[index].set(new_values[-1])
+        else:
+            min_level_boxes[index]["values"] = [""]
+            min_level_boxes[index].set("")
+        persist_settings()
+
     for i in range(3):
         row_frame = ttk.Frame(root)
         row_frame.pack(fill="x", padx=10, pady=(6, 0))
 
-        check_var = tk.BooleanVar(value=True)
+        saved = saved_targets[i] if i < len(saved_targets) else {}
+        check_var = tk.BooleanVar(value=saved.get("enabled", True))
         check_vars.append(check_var)
-        ttk.Checkbutton(row_frame, variable=check_var).pack(side="left")
+        ttk.Checkbutton(row_frame, variable=check_var, command=persist_settings).pack(
+            side="left"
+        )
 
         ttk.Label(row_frame, text=f"Target {i+1}").pack(side="left", padx=(2, 6))
 
@@ -434,7 +398,7 @@ def main():
             width=28,
         )
         box.pack(side="left")
-        box.bind("<<ComboboxSelected>>", lambda e, i=i: update_min_level(i))
+        box.bind("<<ComboboxSelected>>", lambda e, idx=i: update_min_level(idx))
 
         ttk.Label(root, text="  Minimum value").pack(anchor="w", padx=30)
         min_var = tk.StringVar(value="")
@@ -442,41 +406,121 @@ def main():
         min_box = ttk.Combobox(
             root,
             textvariable=min_var,
-            values=[],
+            values=[""],
             state="readonly",
             width=32,
         )
         min_box.pack(anchor="w", padx=(42, 10), pady=(0, 2))
+        min_box.bind("<<ComboboxSelected>>", persist_settings)
         min_level_boxes.append(min_box)
 
-    # --- Match mode ---
+    # Restore saved selections now that all widgets exist
+    for i in range(3):
+        saved = saved_targets[i] if i < len(saved_targets) else {}
+        category = saved.get("category", "")
+        min_value = saved.get("min_value", "")
+        if category and category in crys_options:
+            dropdown_vars[i].set(category)
+            options = crys_options[category]
+            min_level_boxes[i]["values"] = [""] + options
+            min_level_vars[i].set(min_value if min_value in options else "")
+
     ttk.Separator(root, orient="horizontal").pack(fill="x", padx=10, pady=8)
 
     match_frame = ttk.Frame(root)
     match_frame.pack(anchor="w", padx=14)
     ttk.Label(match_frame, text="Match mode:").pack(side="left", padx=(0, 8))
-    match_mode_var = tk.StringVar(value="OR")
+    match_mode_var = tk.StringVar(value=settings.get("match_mode", "OR"))
     ttk.Radiobutton(
-        match_frame, text="OR (any target)", variable=match_mode_var, value="OR"
+        match_frame,
+        text="OR (any target)",
+        variable=match_mode_var,
+        value="OR",
+        command=persist_settings,
     ).pack(side="left", padx=4)
     ttk.Radiobutton(
-        match_frame, text="AND (all targets)", variable=match_mode_var, value="AND"
+        match_frame,
+        text="AND (all targets)",
+        variable=match_mode_var,
+        value="AND",
+        command=persist_settings,
     ).pack(side="left", padx=4)
 
-    # --- Options ---
     ttk.Separator(root, orient="horizontal").pack(fill="x", padx=10, pady=8)
 
-    should_log_var = tk.BooleanVar(value=True)
-    ttk.Checkbutton(root, text="Save roll log (JSONL)", variable=should_log_var).pack(
-        anchor="w", padx=14
-    )
-    debug_log_var = tk.BooleanVar(value=False)
-    ttk.Checkbutton(root, text="Verbose debug logging", variable=debug_log_var).pack(
-        anchor="w", padx=14
-    )
+    should_log_var = tk.BooleanVar(value=settings.get("should_log", True))
+    ttk.Checkbutton(
+        root,
+        text="Save roll log (JSONL)",
+        variable=should_log_var,
+        command=persist_settings,
+    ).pack(anchor="w", padx=14)
 
-    # --- Buttons ---
+    debug_log_var = tk.BooleanVar(value=settings.get("debug_log", False))
+    ttk.Checkbutton(
+        root,
+        text="Verbose debug logging",
+        variable=debug_log_var,
+        command=persist_settings,
+    ).pack(anchor="w", padx=14)
+
     ttk.Separator(root, orient="horizontal").pack(fill="x", padx=10, pady=8)
+
+    def start_reroll():
+        nonlocal reroll_thread
+        if reroll_thread and reroll_thread.is_alive():
+            logger.warning("Already running — press Stop first.")
+            return
+
+        persist_settings()
+        logger.setLevel(logging.DEBUG if debug_log_var.get() else logging.INFO)
+
+        roll_log_path: str | None = None
+        if should_log_var.get():
+            os.makedirs("reroll_logs", exist_ok=True)
+            roll_log_path = (
+                f"reroll_logs/{datetime.today().strftime('%Y-%m-%dT%H-%M-%S')}.jsonl"
+            )
+            fh = logging.FileHandler(
+                roll_log_path.replace(".jsonl", "_verbose.txt"), encoding="utf-8"
+            )
+            fh.setFormatter(log_formatter)
+            logger.addHandler(fh)
+            logger.info("Logging rolls to %s", roll_log_path)
+
+        targets: list[str] = []
+        for i in range(3):
+            if not check_vars[i].get():
+                continue
+            category = dropdown_vars[i].get()
+            min_val = min_level_vars[i].get()
+            if not category or not min_val:
+                continue
+            options = crys_options.get(category, [])
+            try:
+                idx = options.index(min_val)
+                targets += options[idx:]
+            except ValueError:
+                pass
+
+        if not targets:
+            logger.warning("No valid targets selected — nothing to reroll for.")
+            return
+
+        match_mode = "AND" if match_mode_var.get() == "AND" else "OR"
+        required_count = len(targets)
+
+        stop_flag.clear()
+        reroll_thread = threading.Thread(
+            target=reroll,
+            args=(win, targets, match_mode, required_count, stop_flag, roll_log_path),
+            daemon=True,
+        )
+        reroll_thread.start()
+
+    def stop_reroll():
+        stop_flag.set()
+        logger.info("Stop requested — will halt after current roll.")
 
     btn_frame = ttk.Frame(root)
     btn_frame.pack(pady=4)
@@ -484,7 +528,8 @@ def main():
         side="left", padx=6
     )
     ttk.Button(btn_frame, text="Stop", command=stop_reroll).pack(side="left", padx=6)
-    keyboard.add_hotkey("ctrl+shift+e", lambda: stop_reroll)
+
+    keyboard.add_hotkey("ctrl+shift+e", stop_reroll)
 
     ttk.Label(
         root,
@@ -497,13 +542,28 @@ def main():
         text="Ctrl+Shift+E = stop reroll",
         foreground="gray",
         font=("TkDefaultFont", 8),
-    ).pack(pady=(8, 0))
+    ).pack(pady=(2, 0))
     ttk.Label(
         root,
-        text="Current version: 1.0.0",
+        text=f"Current version: {__version__}",
         foreground="black",
         font=("TkDefaultFont", 10),
     ).pack(pady=(8, 0))
+    if new_version := check_git_version_match():
+        ttk.Label(
+            root,
+            text=f"Version {new_version} available",
+            foreground="black",
+            font=("TkDefaultFont", 10, "bold"),
+        ).pack(pady=(4, 0))
+        button = ttk.Button(
+            root,
+            text="Download Latest Version",
+            command=lambda: webbrowser.open(
+                "https://github.com/thefrozenfishy/exedra-crys-reroller/releases"
+            ),
+        )
+        button.pack()
 
     root.mainloop()
 
