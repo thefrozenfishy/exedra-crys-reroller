@@ -719,7 +719,7 @@ def main():
             root,
             text="Download Latest Version",
             command=lambda: webbrowser.open(
-                "https://github.com/thefrozenfishy/exedra-crys-reroller/releases"
+                f"https://github.com/thefrozenfishy/exedra-crys-reroller/releases/tag/version-{new_version}"
             ),
         )
         button.pack()
