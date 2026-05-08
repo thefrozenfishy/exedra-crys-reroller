@@ -1,4 +1,5 @@
 import json
+import zipfile
 from collections import defaultdict
 from pathlib import Path
 
@@ -139,6 +140,15 @@ def pct(x):
 def load_runs():
     runs = []
 
+    for zip_path in sorted(Path("reroll_logs").rglob("*.zip")):
+        with zipfile.ZipFile(zip_path, "r") as zf:
+            for name in sorted(zf.namelist()):
+                if name.endswith(".jsonl"):
+                    with zf.open(name) as fh:
+                        lines = fh.read().decode("utf-8").splitlines()
+                        runs.append(
+                            [json.loads(line) for line in lines if line.strip()]
+                        )
     for f in sorted(Path("reroll_logs").rglob("*.jsonl")):
         with open(f, "r", encoding="utf-8") as fh:
             runs.append([json.loads(line) for line in fh if line.strip()])
