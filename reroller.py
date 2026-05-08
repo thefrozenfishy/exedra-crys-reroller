@@ -608,7 +608,7 @@ def main():
         value="AND",
         command=persist_settings,
     ).pack(side="left", padx=4)
-    permalock_var = tk.BooleanVar(value=settings.get("permalock_once_reached", False))
+    permalock_var = tk.BooleanVar(value=settings.get("permalock_once_reached", True))
     permalock_check = ttk.Checkbutton(
         root,
         text="Permalock options underways",
@@ -655,18 +655,18 @@ def main():
         persist_settings()
         logger.setLevel(logging.DEBUG if debug_log_var.get() else logging.INFO)
 
+        run_id = datetime.today().strftime("%Y-%m-%dT%H-%M-%S")
         roll_log_path: str | None = None
         if should_log_var.get():
             os.makedirs("reroll_logs", exist_ok=True)
-            roll_log_path = (
-                f"reroll_logs/{datetime.today().strftime('%Y-%m-%dT%H-%M-%S')}.jsonl"
-            )
-            fh = logging.FileHandler(
-                roll_log_path.replace(".jsonl", "_verbose.txt"), encoding="utf-8"
-            )
+            roll_log_path = f"reroll_logs/{run_id}.jsonl"
+            logger.info("Logging rolls for %s", run_id)
+        if debug_log_var.get():
+            os.makedirs("debug/logs", exist_ok=True)
+            fh = logging.FileHandler(f"debug/logs/{run_id}.txt", encoding="utf-8")
             fh.setFormatter(log_formatter)
             logger.addHandler(fh)
-            logger.info("Logging rolls to %s", roll_log_path)
+            logger.info("Debugging for %s", run_id)
 
         targets: list[str] = []
         for i in range(3):

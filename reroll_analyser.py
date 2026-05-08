@@ -139,7 +139,7 @@ def pct(x):
 def load_runs():
     runs = []
 
-    for f in sorted(Path("reroll_logs").glob("*.jsonl")):
+    for f in sorted(Path("reroll_logs").rglob("*.jsonl")):
         with open(f, "r", encoding="utf-8") as fh:
             runs.append([json.loads(line) for line in fh if line.strip()])
 
