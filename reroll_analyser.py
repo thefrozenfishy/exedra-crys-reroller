@@ -233,13 +233,7 @@ def compute_marginal(state_counts, state_value_counts):
     return marginal
 
 
-def export_to_grid_excel(
-    marginal,
-    global_counts,
-    state_counts,
-    total,
-    filename="stat_heatmap.xlsx",
-):
+def export_to_grid_excel(marginal, global_counts, state_counts, total):
     categories = list(STAT_CATEGORIES.keys())
 
     prob_grid = pd.DataFrame(
@@ -321,17 +315,11 @@ def export_to_grid_excel(
 
     summary_df = pd.DataFrame(summary_rows)
 
-    with pd.ExcelWriter(filename) as writer:
-        prob_grid.to_excel(writer, sheet_name="probs")
-        total_grid.to_excel(writer, sheet_name="totals")
-        summary_df.to_excel(
-            writer,
-            sheet_name="summary",
-            header=False,
-            index=False,
-        )
+    prob_grid.to_csv("prob.csv")
+    total_grid.to_csv("total.csv")
+    summary_df.to_csv("summary.csv", header=False, index=False)
 
-    print(f"Heatmap exported to {filename}")
+    print("CSV files exported")
 
 
 def report(state_counts, global_counts, marginal, total):
@@ -356,13 +344,7 @@ def main():
     state_counts, state_value_counts, global_counts, total = compute(runs)
     marginal = compute_marginal(state_counts, state_value_counts)
     report(state_counts, global_counts, marginal, total)
-    export_to_grid_excel(
-        marginal,
-        global_counts,
-        state_counts,
-        total,
-        "stat_heatmap.xlsx",
-    )
+    export_to_grid_excel(marginal, global_counts, state_counts, total)
 
 
 if __name__ == "__main__":
