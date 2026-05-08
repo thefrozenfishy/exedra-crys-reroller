@@ -7,10 +7,11 @@ import re
 import sys
 import threading
 import tkinter as tk
+import webbrowser
 from collections import defaultdict
 from datetime import datetime
 from tkinter import ttk
-from requests import get
+
 import cv2
 import keyboard
 import numpy as np
@@ -18,10 +19,10 @@ import pyautogui
 import pydirectinput
 import pygetwindow
 import pytesseract
-import webbrowser
 import win32gui
 import win32ui
 from PIL import Image
+from requests import get
 
 nice_names = {
     31: "Increases max HP",
@@ -79,6 +80,7 @@ TESS_CONFIG = (
 REROLL_SCREEN_TEXT = _normalize(
     "Use Paint Drop to roll the boost effects for the following Crystalis ability."
 )
+REMOVE_PERMALOCK_TEXT = _normalize("Remove Permalock Confirmation")
 pydirectinput.FAILSAFE = False
 keyboard.add_hotkey("ctrl+shift+q", lambda: os._exit(0))
 
@@ -315,16 +317,55 @@ def click(x: float | int, y: float | int):
         return
     prev_hwnd = win32gui.GetForegroundWindow()
     ctypes.windll.user32.SetForegroundWindow(hwnd)
-    pyautogui.sleep(0.05)
+    pyautogui.sleep(0.02)
     curr = pyautogui.position()
     pydirectinput.click(int(x), int(y))
     pyautogui.moveTo(curr)
-    pyautogui.sleep(0.05)
+    pyautogui.sleep(0.02)
     ctypes.windll.user32.SetForegroundWindow(prev_hwnd)
 
 
-def click_reroll_button(win) -> None:
-    click(win.left + 0.6 * win.width, win.top + 0.85 * win.height)
+def is_on_remove_permalock_screen(win, debug_log) -> bool:
+    hwnd = win32gui.FindWindow(None, TARGET_WINDOW)
+    img = _capture_window(hwnd)
+    ocr_text = _ocr_raw(
+        img.crop(
+            (
+                0.3 * win.width,
+                0.1 * win.height,
+                0.7 * win.width,
+                0.15 * win.height,
+            )
+        ),
+        debug_log,
+        79,
+    )
+
+    if not ocr_text:
+        return False
+
+    score = difflib.SequenceMatcher(
+        None,
+        REMOVE_PERMALOCK_TEXT,
+        _normalize(ocr_text),
+    ).ratio()
+
+    return score >= 0.75
+
+
+def click_reroll_button(win, debug_log) -> None:
+    key = "enter"
+    if is_on_remove_permalock_screen(win, debug_log):
+        key = "esc"
+    hwnd = win32gui.FindWindow(None, TARGET_WINDOW)
+    if not hwnd:
+        return
+    prev_hwnd = win32gui.GetForegroundWindow()
+    ctypes.windll.user32.SetForegroundWindow(hwnd)
+    pyautogui.sleep(0.02)
+    pydirectinput.press(key)
+    pyautogui.sleep(0.02)
+    ctypes.windll.user32.SetForegroundWindow(prev_hwnd)
 
 
 def reroll(
@@ -349,7 +390,7 @@ def reroll(
             logger.info("Not on reroll screen")
             if stop_flag.is_set():
                 break
-            click_reroll_button(win)
+            click_reroll_button(win, debug_log)
             continue
 
         current_values = fetch_current_crys_values(win, debug_log, False)
@@ -408,24 +449,22 @@ def reroll(
                             )
                             input("Proceed?")
 
-                            click_reroll_button(win)
+                            click_reroll_button(win, debug_log)
 
                             click(
                                 win.left + 0.6 * win.width, win.top + 0.75 * win.height
                             )
                             pyautogui.sleep(3)
-                            already_locked_targets = fetch_current_crys_values(
-                                win, debug_log, True
-                            )
+                            already_locked_targets = []
 
         if stop_flag.is_set():
             break
         roll_number += 1
-        click_reroll_button(win)
+        click_reroll_button(win, debug_log)
         pyautogui.sleep(0.75)
-        click_reroll_button(win)
+        click_reroll_button(win, debug_log)
         pyautogui.sleep(0.1)
-        click_reroll_button(win)
+        click_reroll_button(win, debug_log)
         pyautogui.sleep(0.1)
 
     logger.info("Reroll stopped by user after %d rolls.", roll_number)
@@ -475,7 +514,6 @@ def main():
     dropdown_vars = []
     min_level_vars = []
     min_level_boxes = []
-    check_vars = []
 
     saved_targets = settings.get("targets", [{}, {}, {}])
 
@@ -488,7 +526,6 @@ def main():
             "permalock_once_reached": permalock_var.get(),
             "targets": [
                 {
-                    "enabled": check_vars[i].get(),
                     "category": dropdown_vars[i].get(),
                     "min_value": min_level_vars[i].get(),
                 }
@@ -513,12 +550,6 @@ def main():
         row_frame.pack(fill="x", padx=10, pady=(6, 0))
 
         saved = saved_targets[i] if i < len(saved_targets) else {}
-        check_var = tk.BooleanVar(value=saved.get("enabled", True))
-        check_vars.append(check_var)
-        ttk.Checkbutton(row_frame, variable=check_var, command=persist_settings).pack(
-            side="left"
-        )
-
         ttk.Label(row_frame, text=f"Target {i+1}").pack(side="left", padx=(2, 6))
 
         var = tk.StringVar(value="")
@@ -640,8 +671,6 @@ def main():
 
         targets: list[str] = []
         for i in range(3):
-            if not check_vars[i].get():
-                continue
             category = dropdown_vars[i].get()
             min_val = min_level_vars[i].get()
             if not category or not min_val:
