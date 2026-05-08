@@ -135,17 +135,27 @@ def pprint(number: int):
 
 def load_runs():
     runs = []
+    seen = set()
 
     for zip_path in sorted(Path("reroll_logs").rglob("*.zip")):
         with zipfile.ZipFile(zip_path, "r") as zf:
-            for name in sorted(zf.namelist()):
-                if name.endswith(".jsonl"):
-                    with zf.open(name) as fh:
-                        lines = fh.read().decode("utf-8").splitlines()
-                        runs.append(
-                            [json.loads(line) for line in lines if line.strip()]
-                        )
+            for info in sorted(zf.infolist(), key=lambda i: i.filename):
+                if not info.filename.endswith(".jsonl"):
+                    continue
+                key = (Path(info.filename).name, info.file_size)
+                if key in seen:
+                    continue
+                seen.add(key)
+                with zf.open(info) as fh:
+                    lines = fh.read().decode("utf-8").splitlines()
+                    runs.append([json.loads(line) for line in lines if line.strip()])
+
     for f in sorted(Path("reroll_logs").rglob("*.jsonl")):
+        size = f.stat().st_size
+        key = (f.name, size)
+        if key in seen:
+            continue
+        seen.add(key)
         with open(f, "r", encoding="utf-8") as fh:
             runs.append([json.loads(line) for line in fh if line.strip()])
 
