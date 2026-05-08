@@ -129,12 +129,8 @@ for cat, vals in STAT_CATEGORIES.items():
         VALUE_TO_CATEGORY[v] = cat
 
 
-def cat(v):
-    return VALUE_TO_CATEGORY[v]
-
-
-def pct(x):
-    return f"{x*100:.2f}%"
+def pprint(number: int):
+    return f"{number*100:.2f}%"
 
 
 def load_runs():
@@ -164,7 +160,7 @@ def detect_locked(a, b, c):
     locked = set()
     for s in ("s1", "s2", "s3"):
         if a[s] == b[s] == c[s]:
-            locked.add(cat(c[s]))
+            locked.add(VALUE_TO_CATEGORY[c[s]])
     return locked
 
 
@@ -208,7 +204,7 @@ def compute(runs):
             for slot in ("s1", "s2", "s3"):
                 stat = run_state[slot]
 
-                if cat(stat) in state:
+                if VALUE_TO_CATEGORY[stat] in state:
                     continue
 
                 state_value_counts[state][stat] += 1
@@ -218,7 +214,7 @@ def compute(runs):
     return state_counts, state_value_counts, global_value_counts, total_values
 
 
-def compute_marginal(state_counts, state_value_counts, total_values):
+def compute_marginal(state_counts, state_value_counts):
     marginal = defaultdict(float)
 
     total_states = sum(state_counts.values())
@@ -237,34 +233,110 @@ def compute_marginal(state_counts, state_value_counts, total_values):
     return marginal
 
 
-def export_to_grid_excel(marginal, filename="stat_heatmap.xlsx"):
-    # Initialize a 10-tier grid for all categories
+def export_to_grid_excel(
+    marginal,
+    global_counts,
+    state_counts,
+    total,
+    filename="stat_heatmap.xlsx",
+):
     categories = list(STAT_CATEGORIES.keys())
-    # Create an empty DataFrame: Rows = Tiers (1-10), Columns = Categories
-    grid = pd.DataFrame(0.0, index=range(1, 11), columns=categories)
+
+    prob_grid = pd.DataFrame(
+        0.0,
+        index=range(1, 11),
+        columns=categories,
+    )
+
+    total_grid = pd.DataFrame(
+        0,
+        index=range(1, 11),
+        columns=categories,
+    )
 
     for val, prob in marginal.items():
-        category = cat(val)
-        # Determine tier based on position in the original STAT_CATEGORIES list
+        category = VALUE_TO_CATEGORY[val]
+
         try:
             tier = STAT_CATEGORIES[category].index(val) + 1
-            grid.at[tier, category] = prob
+
+            raw_total = global_counts.get(val, 0)
+
+            prob_grid.at[tier, category] = prob
+            total_grid.at[tier, category] = raw_total
+
         except ValueError:
-            # Handle the "..." or missing values gracefully
             continue
 
-    # Export with styling
-    grid.to_excel(filename)
+    summary_rows = []
+
+    summary_rows.append(["Metric", "Value"])
+    summary_rows.append(["Valid rolls", sum(state_counts.values())])
+    summary_rows.append(["Total non-locked slots analyzed", total])
+
+    summary_rows.append([])
+    summary_rows.append(["LOCK STATE DIST", "Count"])
+
+    for s, c in sorted(state_counts.items(), key=lambda x: -x[1]):
+        summary_rows.append(
+            [
+                ",".join(sorted(s)) if s else "NONE",
+                c,
+            ]
+        )
+
+    summary_rows.append([])
+    summary_rows.append(
+        [
+            "GLOBAL RAW (biased baseline)",
+            "Probability",
+        ]
+    )
+
+    global_total = sum(global_counts.values())
+
+    for v, c in sorted(global_counts.items(), key=lambda x: -x[1]):
+        summary_rows.append(
+            [
+                v,
+                f"{c/global_total*100:.4f}%",
+            ]
+        )
+
+    summary_rows.append([])
+    summary_rows.append(
+        [
+            "MARGINALIZED TRUE PROBABILITY ESTIMATE",
+            "Probability",
+        ]
+    )
+
+    for v, p in sorted(marginal.items(), key=lambda x: -x[1]):
+        summary_rows.append(
+            [
+                v,
+                f"{p*100:.4f}%",
+            ]
+        )
+
+    summary_df = pd.DataFrame(summary_rows)
+
+    with pd.ExcelWriter(filename) as writer:
+        prob_grid.to_excel(writer, sheet_name="probs")
+        total_grid.to_excel(writer, sheet_name="totals")
+        summary_df.to_excel(
+            writer,
+            sheet_name="summary",
+            header=False,
+            index=False,
+        )
+
     print(f"Heatmap exported to {filename}")
 
 
-def report(state_counts, global_counts, marginal):
+def report(state_counts, global_counts, marginal, total):
     print(f"Valid rolls: {sum(s for s in state_counts.values())}")
-    print(
-        "Total non-locked slots analyzed: {}".format(
-            sum(s * (3 - len(k)) for k, s in state_counts.items())
-        )
-    )
+    print(f"Total non-locked slots analyzed: {total}")
 
     print("LOCK STATE DIST:")
     for s, c in sorted(state_counts.items(), key=lambda x: -x[1]):
@@ -272,19 +344,25 @@ def report(state_counts, global_counts, marginal):
 
     print("\nGLOBAL RAW (biased baseline)")
     for v, c in sorted(global_counts.items(), key=lambda x: -x[1]):
-        print(f"{pct(c/sum(global_counts.values()))} {v}")
+        print(f"{pprint(c/sum(global_counts.values()))} {v}")
 
     print("\nMARGINALIZED TRUE PROBABILITY ESTIMATE")
     for v, p in sorted(marginal.items(), key=lambda x: -x[1]):
-        print(f"{pct(p)} {v}")
+        print(f"{pprint(p)} {v}")
 
 
 def main():
     runs = load_runs()
     state_counts, state_value_counts, global_counts, total = compute(runs)
-    marginal = compute_marginal(state_counts, state_value_counts, total)
-    report(state_counts, global_counts, marginal)
-    export_to_grid_excel(marginal, "stat_heatmap.xlsx")
+    marginal = compute_marginal(state_counts, state_value_counts)
+    report(state_counts, global_counts, marginal, total)
+    export_to_grid_excel(
+        marginal,
+        global_counts,
+        state_counts,
+        total,
+        "stat_heatmap.xlsx",
+    )
 
 
 if __name__ == "__main__":
