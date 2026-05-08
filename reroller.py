@@ -447,7 +447,6 @@ def reroll(
                                 win.left + 0.85 * win.width,
                                 win.top + (0.08 * i + 0.3) * win.height,
                             )
-                            input("Proceed?")
 
                             click_reroll_button(win, debug_log)
 
