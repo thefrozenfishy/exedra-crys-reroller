@@ -26,8 +26,8 @@ from requests import get
 
 nice_names = {
     31: "Increases max HP",
-    32: "ATK+",
-    33: "DEF+",
+    32: "ATK+ (fyi 60 ATK ≈ 2% Crit DMG)",
+    33: "DEF+ (fyi 45 DEF ≈ 100 HP)",
     34: "Increases SPD",
     35: "Increases critical rate",
     36: "Increases critical DMG",
@@ -36,6 +36,18 @@ nice_names = {
     39: "Increases debuff hit rate",
     40: "Increases debuff RES",
 }
+PERMALOCK_PRIORITY = {
+    "Increases critical rate": 0,
+    "Increases critical DMG": 0,
+    "Increases break effect": 1,
+    "Increases SPD": 2,
+    "Increases max HP": 3,
+    "Increases debuff RES": 3,
+    "Increases debuff hit rate": 3,
+    "DEF+": 4,
+    "ATK+": 4,
+}
+PERMALOCK_EXCLUDED = {"Increases HP recovery amount"}
 NAME_PREFIXES = {"Increases", "ATK", "DEF", "Max"}
 crys_options = defaultdict(list)
 all_possible = set()
@@ -64,12 +76,14 @@ with open(resource_path("getSelectionAbilityMstList.json"), "r", encoding="utf-8
             )
             all_possible.add(c["description"])
 
-_normalised_to_canonical: dict[str, str] = {_normalize(s): s for s in all_possible}
+_normalised_to_canonical = {_normalize(s): s for s in all_possible}
 _normalised_to_canonical["increaseshprecoveryamountby."] = (
     "Increases HP recovery amount by 8%."
 )
 _normalised_to_canonical["???"] = "???"
-
+crys_options_reverse = {
+    desc: cat for cat, descs in crys_options.items() for desc in descs
+}
 possible_chars = set("".join(_normalised_to_canonical.values()))
 possible_chars.remove(" ")
 
@@ -377,7 +391,7 @@ def reroll(
     targets: list[str],
     match_mode: str,
     should_permalock: bool,
-    required_count: int,
+    target_categories: set[str],
     stop_flag: threading.Event,
     roll_log_path: str | None,
     debug_log: bool = False,
@@ -432,8 +446,9 @@ def reroll(
                 logger.info("Found one target in OR mode, stopping")
                 return
             if match_mode == "AND":
-                if len(found_targets) == required_count:
-                    logger.info("Found all targets in AND mode, stopping")
+                found_categories = {crys_options_reverse.get(v) for v in found_targets}
+                if target_categories.issubset(found_categories):
+                    logger.info("Found all target categories in AND mode, stopping")
                     return
 
                 if should_permalock:
@@ -441,34 +456,88 @@ def reroll(
                         already_locked_targets = fetch_current_crys_values(
                             win, debug_log, True
                         )
-                    for i, v in enumerate(current_values):
-                        if v in target_set and v not in already_locked_targets:
+
+                    locked_categories = {
+                        crys_options_reverse.get(v)
+                        for v in already_locked_targets
+                        if v is not None
+                    }
+
+                    still_needed = target_categories - locked_categories
+
+                    present_cats = {
+                        crys_options_reverse.get(v)
+                        for v in current_values
+                        if v in target_set
+                    }
+                    lockable_now = present_cats - locked_categories - PERMALOCK_EXCLUDED
+
+                    # Categories we still need but are NOT on this roll at all
+                    missing_cats = still_needed - present_cats - PERMALOCK_EXCLUDED
+                    logger.debug(
+                        "Stuff is %s, %s, %s, %s, %s, %s, %s",
+                        found_categories,
+                        already_locked_targets,
+                        locked_categories,
+                        still_needed,
+                        present_cats,
+                        lockable_now,
+                        missing_cats,
+                    )
+                    if lockable_now:
+                        best_lockable_priority = min(
+                            PERMALOCK_PRIORITY.get(cat, 999) for cat in lockable_now
+                        )
+                        best_missing_priority = min(
+                            (PERMALOCK_PRIORITY.get(cat, 999) for cat in missing_cats),
+                            default=999,
+                        )
+                        logger.debug(
+                            "prios: %d vs %d",
+                            best_lockable_priority,
+                            best_missing_priority,
+                        )
+
+                        if best_missing_priority >= best_lockable_priority:
+                            for i, v in enumerate(current_values):
+                                cat = crys_options_reverse.get(v)
+                                logger.debug("%s with %s", v in target_set, cat)
+                                if (
+                                    v in target_set
+                                    and cat not in locked_categories
+                                    and cat not in PERMALOCK_EXCLUDED
+                                    and PERMALOCK_PRIORITY.get(cat, 999)
+                                    == best_lockable_priority
+                                ):
+                                    logger.info(
+                                        "Permalock priority %d — locking %s at index %d",
+                                        best_lockable_priority,
+                                        v,
+                                        i,
+                                    )
+                                    click(
+                                        win.left + 0.85 * win.width,
+                                        win.top + (0.08 * i + 0.3) * win.height,
+                                    )
+
+                                    click_reroll_button(win, debug_log)
+                                    click(
+                                        win.left + 0.6 * win.width,
+                                        win.top + 0.75 * win.height,
+                                    )
+                                    pyautogui.sleep(3)
+                                    already_locked_targets = []
+                        else:
                             logger.info(
-                                "Permalock enabled — permalocking %s at index %d", v, i
+                                "Skipping permalock — missing rarer category (priority %d) not on this roll",
+                                best_missing_priority,
                             )
-
-                            click(
-                                win.left + 0.85 * win.width,
-                                win.top + (0.08 * i + 0.3) * win.height,
-                            )
-
-                            click_reroll_button(win, debug_log)
-
-                            click(
-                                win.left + 0.6 * win.width, win.top + 0.75 * win.height
-                            )
-                            pyautogui.sleep(3)
-                            already_locked_targets = []
 
         if stop_flag.is_set():
             break
         roll_number += 1
         click_reroll_button(win, debug_log)
         pyautogui.sleep(0.75)
-        click_reroll_button(win, debug_log)
-        pyautogui.sleep(0.1)
-        click_reroll_button(win, debug_log)
-        pyautogui.sleep(0.1)
 
     logger.info("Reroll stopped by user after %d rolls.", roll_number)
 
@@ -507,9 +576,9 @@ def main():
     root.title("Exedra Auto Reroller")
 
     if new_version := check_git_version_match():
-        height = 540
+        height = 570
     else:
-        height = 480
+        height = 510
     root.geometry(f"340x{height}+50+50")
     root.resizable(False, False)
 
@@ -620,6 +689,12 @@ def main():
         command=persist_settings,
     )
     permalock_check.pack(anchor="w", padx=28, pady=(2, 0))
+    ttk.Label(
+        root,
+        text="Locks in rarest options first to minimize total rolls.\nMeaning you might see it roll past spd4 or HP420\nthis is by design.",
+        foreground="gray",
+        font=("TkDefaultFont", 8),
+    ).pack(anchor="w", padx=44)
 
     def update_permalock_visibility(*_):
         if match_mode_var.get() == "AND":
@@ -673,24 +748,29 @@ def main():
             logger.info("Debugging for %s", run_id)
 
         targets: list[str] = []
+        target_categories = set()
+        match_mode = "AND" if match_mode_var.get() == "AND" else "OR"
         for i in range(3):
             category = dropdown_vars[i].get()
             min_val = min_level_vars[i].get()
             if not category or not min_val:
                 continue
+            target_categories.add(category)
             options = crys_options.get(category, [])
-            try:
+            if match_mode == "AND" and permalock_var.get():
+                logger.info(
+                    "Permalocking mode active, forcing min value of '%s' to be '%s'",
+                    category,
+                    options[-1],
+                )
+                idx = -1
+            else:
                 idx = options.index(min_val)
-                targets += options[idx:]
-            except ValueError:
-                pass
+            targets += options[idx:]
 
         if not targets:
             logger.warning("No valid targets selected — nothing to reroll for.")
             return
-
-        match_mode = "AND" if match_mode_var.get() == "AND" else "OR"
-        required_count = len(targets)
 
         stop_flag.clear()
         reroll_thread = threading.Thread(
@@ -700,7 +780,7 @@ def main():
                 targets,
                 match_mode,
                 permalock_var.get(),
-                required_count,
+                target_categories,
                 stop_flag,
                 roll_log_path,
                 debug_log_var.get(),
