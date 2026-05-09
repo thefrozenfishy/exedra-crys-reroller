@@ -15,6 +15,7 @@
 * There's two modes:
   * In OR mode it will stop if any of the targets are present.
   * In AND mode it will stop once all targets are present.
-    * If you check the ``Permalock options underways`` box it will permalock any reached target and then continue until all targets are rolled. Ideally do this with targets ``Increases critical rate by 5%`` and ``Increases critical DMG by 10%`` on attackers, or similar hard to obtain rolls.![alt text](roll_lock.gif)
+    * If you check the ``Permalock options underways`` box it will permalock any reached target and then continue until all targets are rolled. Ideally do this with targets ``Increases critical rate by 5%`` and ``Increases critical DMG by 10%`` on attackers, or similar hard to obtain rolls.![alt text](roll_lock.gif).
+    * Note that ``Permalock options underways`` will aim to minimize rolls, meaning that if you aim for ``Increases critical rate by 5%``, ``Increases critical DMG by 10%`` & ``Increases SPD by 4.`` then it will lock Crit DMG and Crit Rate before locking SPD, meaning you may always choose 3 targets and know that it will lock the rarest if desired.
 * Save roll logs stores your rolls in the ``reroll_logs`` folder, do with these as you please, but also if you obtain a lot TFF would love to get them send on discord as a zip file to analyze roll probabilities!
 * Note the program assumes you have default keybinding where reroll is on the ``Enter`` key.

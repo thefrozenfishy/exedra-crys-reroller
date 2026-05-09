@@ -610,7 +610,7 @@ def main():
         main_value = dropdown_vars[index].get()
         if main_value and main_value in crys_options:
             new_values = crys_options[main_value]
-            min_level_boxes[index]["values"] = [""] + new_values
+            min_level_boxes[index]["values"] = new_values
             min_level_boxes[index].set(new_values[-1])
         else:
             min_level_boxes[index]["values"] = [""]
@@ -658,7 +658,7 @@ def main():
         if category and category in crys_options:
             dropdown_vars[i].set(category)
             options = crys_options[category]
-            min_level_boxes[i]["values"] = [""] + options
+            min_level_boxes[i]["values"] = options
             min_level_vars[i].set(min_value if min_value in options else "")
 
     ttk.Separator(root, orient="horizontal").pack(fill="x", padx=10, pady=8)
@@ -747,7 +747,6 @@ def main():
             logger.addHandler(fh)
             logger.info("Debugging for %s", run_id)
 
-        targets: list[str] = []
         target_categories = set()
         match_mode = "AND" if match_mode_var.get() == "AND" else "OR"
         for i in range(3):
@@ -756,8 +755,24 @@ def main():
             if not category or not min_val:
                 continue
             target_categories.add(category)
+        lowest_prio_cat = None
+        if len(target_categories) == 3:
+            lowest_prio_cat = max(
+                (PERMALOCK_PRIORITY.get(t), t) for t in target_categories
+            )[1]
+
+        targets: list[str] = []
+        for i in range(3):
+            category = dropdown_vars[i].get()
+            min_val = min_level_vars[i].get()
+            if not category or not min_val:
+                continue
             options = crys_options.get(category, [])
-            if match_mode == "AND" and permalock_var.get():
+            if (
+                match_mode == "AND"
+                and permalock_var.get()
+                and category != lowest_prio_cat
+            ):
                 logger.info(
                     "Permalocking mode active, forcing min value of '%s' to be '%s'",
                     category,
