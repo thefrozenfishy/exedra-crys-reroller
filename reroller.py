@@ -141,6 +141,7 @@ def is_on_reroll_screen(win, debug_log) -> bool:
     )
 
     if not ocr_text:
+        logger.debug("No reroll text")
         return False
 
     score = difflib.SequenceMatcher(
@@ -149,6 +150,7 @@ def is_on_reroll_screen(win, debug_log) -> bool:
         _normalize(ocr_text),
     ).ratio()
 
+    logger.debug("reroll screen text was %s, with a score of %f", ocr_text, score)
     return score >= 0.75
 
 
@@ -342,6 +344,7 @@ def is_on_remove_permalock_screen(win, debug_log) -> bool:
     )
 
     if not ocr_text:
+        logger.debug("No permalock text")
         return False
 
     score = difflib.SequenceMatcher(
@@ -350,6 +353,7 @@ def is_on_remove_permalock_screen(win, debug_log) -> bool:
         _normalize(ocr_text),
     ).ratio()
 
+    logger.debug("permalock text was %s, with a score of %f", ocr_text, score)
     return score >= 0.75
 
 
