@@ -11,6 +11,7 @@ import webbrowser
 from collections import defaultdict
 from datetime import datetime
 from tkinter import ttk
+from tkinter.scrolledtext import ScrolledText
 
 import cv2
 import keyboard
@@ -102,9 +103,25 @@ log_formatter = logging.Formatter("%(asctime)s - %(message)s", "%Y-%m-%d %H:%M:%
 logger = logging.getLogger("crys_reroller")
 logger.setLevel(logging.INFO)
 
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(log_formatter)
-logger.addHandler(console_handler)
+
+class _GUILogHandler(logging.Handler):
+    def __init__(self, widget: ScrolledText):
+        super().__init__()
+        self.widget = widget
+
+    def emit(self, record: logging.LogRecord):
+        msg = self.format(record) + "\n"
+
+        def _append():
+            self.widget.configure(state="normal")
+            self.widget.insert(tk.END, msg)
+            self.widget.see(tk.END)
+            self.widget.configure(state="disabled")
+
+        try:
+            self.widget.after(0, _append)
+        except RuntimeError:
+            pass  # widget destroyed
 
 
 def load_settings() -> dict:
@@ -574,11 +591,15 @@ def main():
 
     root = tk.Tk()
     root.title("Exedra Auto Reroller")
+    try:
+        root.iconbitmap(resource_path("icon.ico"))
+    except Exception:
+        pass
 
     if new_version := check_git_version_match():
-        height = 570
+        height = 720
     else:
-        height = 510
+        height = 660
     root.geometry(f"340x{height}+50+50")
     root.resizable(False, False)
 
@@ -850,6 +871,23 @@ def main():
             ),
         )
         button.pack()
+
+    ttk.Separator(root, orient="horizontal").pack(fill="x", padx=10, pady=(10, 4))
+    ttk.Label(root, text="Log", font=("TkDefaultFont", 8), foreground="gray").pack(
+        anchor="w", padx=14
+    )
+    log_box = ScrolledText(
+        root,
+        state="disabled",
+        height=8,
+        font=("Courier", 8),
+        wrap="word",
+    )
+    log_box.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+
+    gui_handler = _GUILogHandler(log_box)
+    gui_handler.setFormatter(log_formatter)
+    logger.addHandler(gui_handler)
 
     root.mainloop()
 
