@@ -99,7 +99,7 @@ REMOVE_PERMALOCK_TEXT = _normalize("Remove Permalock Confirmation")
 pydirectinput.FAILSAFE = False
 keyboard.add_hotkey("ctrl+shift+q", lambda: os._exit(0))
 
-log_formatter = logging.Formatter("%(asctime)s - %(message)s", "%Y-%m-%d %H:%M:%S")
+log_formatter = logging.Formatter()
 logger = logging.getLogger("crys_reroller")
 logger.setLevel(logging.INFO)
 
@@ -416,13 +416,14 @@ def reroll(
     target_set = set(targets)
     roll_number = 0
 
-    logger.info("Starting reroll | mode=%s | targets: %s", match_mode, list(target_set))
-    logger.info("Press Ctrl+Shift+Q to force-quit at any time.")
+    logger.debug(
+        "Starting reroll | mode=%s | targets: %s", match_mode, list(target_set)
+    )
     already_locked_targets = []
     while not stop_flag.is_set():
         pyautogui.sleep(0.2)
         if not is_on_reroll_screen(win, debug_log):
-            logger.info("Not on reroll screen")
+            logger.debug("Not on reroll screen")
             if stop_flag.is_set():
                 break
             click_reroll_button(win, debug_log)
@@ -431,7 +432,7 @@ def reroll(
         current_values = fetch_current_crys_values(win, debug_log, False)
 
         if None in current_values:
-            logger.warning(
+            logger.debug(
                 "Roll #%d — could not read all substats (%s), retrying…",
                 roll_number,
                 current_values,
@@ -452,8 +453,12 @@ def reroll(
         found_targets = [v for v in current_values if v in target_set]
 
         logger.info(
-            "Roll #%d — current values: %s | found targets: %s",
+            "Roll #%d %s",
             roll_number,
+            ", ".join(["✔" if v in target_set else "❌" for v in current_values]),
+        )
+        logger.debug(
+            "current values: %s | found targets: %s",
             current_values,
             found_targets,
         )
@@ -789,19 +794,19 @@ def main():
             if not category or not min_val:
                 continue
             options = crys_options.get(category, [])
+            idx = options.index(min_val)
             if (
                 match_mode == "AND"
                 and permalock_var.get()
                 and category != lowest_prio_cat
+                and idx != len(options) - 1
             ):
                 logger.info(
-                    "Permalocking mode active, forcing min value of '%s' to be '%s'",
-                    category,
+                    "Permalocking mode, forcing '%s' to be '%s'",
+                    options[idx],
                     options[-1],
                 )
                 idx = -1
-            else:
-                idx = options.index(min_val)
             targets += options[idx:]
 
         if not targets:
@@ -888,6 +893,8 @@ def main():
     gui_handler = _GUILogHandler(log_box)
     gui_handler.setFormatter(log_formatter)
     logger.addHandler(gui_handler)
+
+    logger.info("Running version %s", __version__)
 
     root.mainloop()
 
