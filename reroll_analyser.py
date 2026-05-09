@@ -1,4 +1,5 @@
 import json
+import os
 import zipfile
 from collections import defaultdict
 from pathlib import Path
@@ -243,6 +244,76 @@ def compute_marginal(state_counts, state_value_counts):
     return marginal
 
 
+def compute_expected_rolls(state_counts, state_value_counts):
+    one_locked_exp = defaultdict(list)
+    two_locked_exp = defaultdict(list)
+
+    total_states = sum(state_counts.values())
+
+    for state, vcounts in state_value_counts.items():
+        n_locked = len(state)
+        free_slots = 3 - n_locked
+        if free_slots <= 0:
+            continue
+
+        total_in_state = sum(vcounts.values())
+        if total_in_state == 0:
+            continue
+
+        weight = state_counts[state] / total_states
+
+        for val, cnt in vcounts.items():
+            p_val = cnt / total_in_state
+            if p_val <= 0:
+                continue
+
+            p_appear = p_val * free_slots
+            expected_rolls = 1.0 / p_appear
+
+            if n_locked == 1:
+                one_locked_exp[val].append((expected_rolls, weight))
+            elif n_locked == 2:
+                two_locked_exp[val].append((expected_rolls, weight))
+
+    def weighted_avg(entries):
+        total_w = sum(w for _, w in entries)
+        if total_w == 0:
+            return None
+        return sum(e * w for e, w in entries) / total_w
+
+    one_locked = {v: weighted_avg(entries) for v, entries in one_locked_exp.items()}
+    two_locked = {v: weighted_avg(entries) for v, entries in two_locked_exp.items()}
+
+    return one_locked, two_locked
+
+
+def export_expected_rolls(one_locked, two_locked):
+    categories = list(STAT_CATEGORIES.keys())
+
+    for label, lookup in [("1_locked", one_locked), ("2_locked", two_locked)]:
+        grid = pd.DataFrame(
+            None,
+            index=range(1, 11),
+            columns=categories,
+            dtype=object,
+        )
+        grid.index.name = "Tier"
+
+        for val, exp_rolls in lookup.items():
+            if exp_rolls is None:
+                continue
+            category = VALUE_TO_CATEGORY.get(val)
+            if category is None:
+                continue
+            try:
+                tier = STAT_CATEGORIES[category].index(val) + 1
+            except ValueError:
+                continue
+            grid.at[tier, category] = round(exp_rolls, 1)
+
+        grid.to_csv(f"csvs/expected_{label}.csv")
+
+
 def export_to_grid_excel(marginal, global_counts, state_counts, total):
     categories = list(STAT_CATEGORIES.keys())
 
@@ -325,9 +396,9 @@ def export_to_grid_excel(marginal, global_counts, state_counts, total):
 
     summary_df = pd.DataFrame(summary_rows)
 
-    prob_grid.to_csv("prob.csv")
-    total_grid.to_csv("total.csv")
-    summary_df.to_csv("summary.csv", header=False, index=False)
+    prob_grid.to_csv("csvs/prob.csv")
+    total_grid.to_csv("csvs/total.csv")
+    summary_df.to_csv("csvs/summary.csv", header=False, index=False)
 
     print("CSV files exported")
 
@@ -350,11 +421,16 @@ def report(state_counts, global_counts, marginal, total):
 
 
 def main():
+    """Upload to https://docs.google.com/spreadsheets/d/1EfElTMXvO9lhbX_KAHAiAHZJ3bzjVye82a2VChNeln0"""
+    os.makedirs("csvs", exist_ok=True)
     runs = load_runs()
     state_counts, state_value_counts, global_counts, total = compute(runs)
     marginal = compute_marginal(state_counts, state_value_counts)
     report(state_counts, global_counts, marginal, total)
     export_to_grid_excel(marginal, global_counts, state_counts, total)
+
+    one_locked, two_locked = compute_expected_rolls(state_counts, state_value_counts)
+    export_expected_rolls(one_locked, two_locked)
 
 
 if __name__ == "__main__":
