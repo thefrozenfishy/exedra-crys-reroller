@@ -129,9 +129,7 @@ for cat, vals in STAT_CATEGORIES.items():
     for v in vals:
         VALUE_TO_CATEGORY[v] = cat
 
-
-def pprint(number: int):
-    return f"{number*100:.2f}%"
+NONE_STATE = frozenset()
 
 
 def load_runs():
@@ -167,32 +165,30 @@ def is_duplicate(a, b):
     return a["s1"] == b["s1"] and a["s2"] == b["s2"] and a["s3"] == b["s3"]
 
 
-def detect_locked(a, b, c):
+def detect_locked(rows):
     locked = set()
     for s in ("s1", "s2", "s3"):
-        if a[s] == b[s] == c[s]:
-            locked.add(VALUE_TO_CATEGORY[c[s]])
-    return locked
+        if len(val_set := set(r[s] for r in rows)) == 1:
+            locked.add(VALUE_TO_CATEGORY[val_set.pop()])
+    return frozenset(locked)
 
 
 def process_run(run):
+    chain_req = 3
     no_dupes = [run[0]]
     for i in range(1, len(run)):
         if not is_duplicate(run[i - 1], run[i]):
             no_dupes.append(run[i])
-    if len(no_dupes) < 3:
+    if len(no_dupes) <= chain_req:
         return []
 
     cleaned = []
-    no_dupes[0]["locked"] = detect_locked(no_dupes[0], no_dupes[1], no_dupes[2])
-    cleaned.append(no_dupes[0])
-    no_dupes[1]["locked"] = detect_locked(no_dupes[0], no_dupes[1], no_dupes[2])
-    cleaned.append(no_dupes[1])
+    for i in range(chain_req):
+        no_dupes[i]["locked"] = detect_locked(no_dupes[i : i + chain_req])
+        cleaned.append(no_dupes[i])
 
-    for i in range(2, len(no_dupes)):
-        no_dupes[i]["locked"] = detect_locked(
-            no_dupes[i - 2], no_dupes[i - 1], no_dupes[i]
-        )
+    for i in range(chain_req, len(no_dupes)):
+        no_dupes[i]["locked"] = detect_locked(no_dupes[i - chain_req : i])
         cleaned.append(no_dupes[i])
 
     return cleaned
@@ -201,236 +197,118 @@ def process_run(run):
 def compute(runs):
     state_counts = defaultdict(int)
     state_value_counts = defaultdict(lambda: defaultdict(int))
-    global_value_counts = defaultdict(int)
-
-    total_values = 0
 
     for run in runs:
-        cleaned = process_run(run)
-
-        for run_state in cleaned:
-            state = frozenset(run_state["locked"])
+        for roll in process_run(run):
+            state = roll["locked"]
             state_counts[state] += 1
-
             for slot in ("s1", "s2", "s3"):
-                stat = run_state[slot]
+                val = roll[slot]
+                if VALUE_TO_CATEGORY[val] not in state:
+                    state_value_counts[state][val] += 1
 
-                if VALUE_TO_CATEGORY[stat] in state:
-                    continue
-
-                state_value_counts[state][stat] += 1
-                global_value_counts[stat] += 1
-                total_values += 1
-
-    return state_counts, state_value_counts, global_value_counts, total_values
+    return state_counts, state_value_counts
 
 
-def compute_marginal(state_counts, state_value_counts):
-    marginal = defaultdict(float)
-
-    total_states = sum(state_counts.values())
-
-    for state, vcounts in state_value_counts.items():
-        ps = state_counts[state] / total_states
-
-        total_in_state = sum(vcounts.values())
-        if total_in_state == 0:
-            continue
-
-        for v, cnt in vcounts.items():
-            pv_given_s = cnt / total_in_state
-            marginal[v] += pv_given_s * ps
-
-    return marginal
+def compute_base_probs(state_value_counts):
+    none_counts = state_value_counts.get(NONE_STATE, {})
+    total = sum(none_counts.values())
+    if total == 0:
+        raise ValueError(
+            "No 0-locked (NONE) rolls found -- cannot estimate base probabilities."
+        )
+    return {val: cnt / total for val, cnt in none_counts.items()}
 
 
-def compute_expected_rolls(state_counts, state_value_counts):
-    one_locked_exp = defaultdict(list)
-    two_locked_exp = defaultdict(list)
-
-    total_states = sum(state_counts.values())
-
-    for state, vcounts in state_value_counts.items():
-        n_locked = len(state)
-        free_slots = 3 - n_locked
-        if free_slots <= 0:
-            continue
-
-        total_in_state = sum(vcounts.values())
-        if total_in_state == 0:
-            continue
-
-        weight = state_counts[state] / total_states
-
-        for val, cnt in vcounts.items():
-            p_val = cnt / total_in_state
-            if p_val <= 0:
-                continue
-
-            p_appear = p_val * free_slots
-            expected_rolls = 1.0 / p_appear
-
-            if n_locked == 1:
-                one_locked_exp[val].append((expected_rolls, weight))
-            elif n_locked == 2:
-                two_locked_exp[val].append((expected_rolls, weight))
-
-    def weighted_avg(entries):
-        total_w = sum(w for _, w in entries)
-        if total_w == 0:
-            return None
-        return sum(e * w for e, w in entries) / total_w
-
-    one_locked = {v: weighted_avg(entries) for v, entries in one_locked_exp.items()}
-    two_locked = {v: weighted_avg(entries) for v, entries in two_locked_exp.items()}
-
-    return one_locked, two_locked
+def compute_expected_rolls(base_probs):
+    zero_locked = {}
+    one_locked = {}
+    two_locked = {}
+    for val, p in base_probs.items():
+        if p > 0:
+            zero_locked[val] = 1.0 / (p * 3)
+            one_locked[val] = 1.0 / (p * 2)
+            two_locked[val] = 1.0 / (p * 1)
+    return zero_locked, one_locked, two_locked
 
 
-def export_expected_rolls(one_locked, two_locked):
+def _make_grid():
     categories = list(STAT_CATEGORIES.keys())
-
-    for label, lookup in [("1_locked", one_locked), ("2_locked", two_locked)]:
-        grid = pd.DataFrame(
-            None,
-            index=range(1, 11),
-            columns=categories,
-            dtype=object,
-        )
-        grid.index.name = "Tier"
-
-        for val, exp_rolls in lookup.items():
-            if exp_rolls is None:
-                continue
-            category = VALUE_TO_CATEGORY.get(val)
-            if category is None:
-                continue
-            try:
-                tier = STAT_CATEGORIES[category].index(val) + 1
-            except ValueError:
-                continue
-            grid.at[tier, category] = round(exp_rolls, 1)
-
-        grid.to_csv(f"csvs/expected_{label}.csv")
+    grid = pd.DataFrame(None, index=range(1, 11), columns=categories, dtype=object)
+    grid.index.name = "Tier"
+    return grid
 
 
-def export_to_grid_excel(marginal, global_counts, state_counts, total):
-    categories = list(STAT_CATEGORIES.keys())
-
-    prob_grid = pd.DataFrame(
-        0.0,
-        index=range(1, 11),
-        columns=categories,
-    )
-
-    total_grid = pd.DataFrame(
-        0,
-        index=range(1, 11),
-        columns=categories,
-    )
-
-    for val, prob in marginal.items():
-        category = VALUE_TO_CATEGORY[val]
-
-        try:
-            tier = STAT_CATEGORIES[category].index(val) + 1
-
-            raw_total = global_counts.get(val, 0)
-
-            prob_grid.at[tier, category] = prob
-            total_grid.at[tier, category] = raw_total
-
-        except ValueError:
-            continue
-
-    summary_rows = []
-
-    summary_rows.append(["Metric", "Value"])
-    summary_rows.append(["Valid rolls", sum(state_counts.values())])
-    summary_rows.append(["Total non-locked slots analyzed", total])
-
-    summary_rows.append([])
-    summary_rows.append(["LOCK STATE DIST", "Count"])
-
-    for s, c in sorted(state_counts.items(), key=lambda x: -x[1]):
-        summary_rows.append(
-            [
-                ",".join(sorted(s)) if s else "NONE",
-                c,
-            ]
-        )
-
-    summary_rows.append([])
-    summary_rows.append(
-        [
-            "GLOBAL RAW (biased baseline)",
-            "Probability",
-        ]
-    )
-
-    global_total = sum(global_counts.values())
-
-    for v, c in sorted(global_counts.items(), key=lambda x: -x[1]):
-        summary_rows.append(
-            [
-                v,
-                f"{c/global_total*100:.4f}%",
-            ]
-        )
-
-    summary_rows.append([])
-    summary_rows.append(
-        [
-            "MARGINALIZED TRUE PROBABILITY ESTIMATE",
-            "Probability",
-        ]
-    )
-
-    for v, p in sorted(marginal.items(), key=lambda x: -x[1]):
-        summary_rows.append(
-            [
-                v,
-                f"{p*100:.4f}%",
-            ]
-        )
-
-    summary_df = pd.DataFrame(summary_rows)
-
-    prob_grid.to_csv("csvs/prob.csv")
-    total_grid.to_csv("csvs/total.csv")
-    summary_df.to_csv("csvs/summary.csv", header=False, index=False)
-
-    print("CSV files exported")
+def _place(grid, val, value):
+    cat = VALUE_TO_CATEGORY.get(val)
+    if cat is None:
+        return
+    try:
+        tier = STAT_CATEGORIES[cat].index(val) + 1
+        grid.at[tier, cat] = value
+    except ValueError:
+        pass
 
 
-def report(state_counts, global_counts, marginal, total):
-    print(f"Valid rolls: {sum(s for s in state_counts.values())}")
-    print(f"Total non-locked slots analyzed: {total}")
+def export_prob(base_probs):
+    grid = _make_grid()
+    for val, p in base_probs.items():
+        _place(grid, val, round(p * 3, 4))
+    grid.to_csv("csvs/prob.csv")
 
-    print("LOCK STATE DIST:")
-    for s, c in sorted(state_counts.items(), key=lambda x: -x[1]):
-        print(f"{','.join(s) if s else 'NONE'}: {c}")
 
-    print("\nGLOBAL RAW (biased baseline)")
-    for v, c in sorted(global_counts.items(), key=lambda x: -x[1]):
-        print(f"{pprint(c/sum(global_counts.values()))} {v}")
+def export_total(state_value_counts):
+    grid = _make_grid()
+    for val, cnt in state_value_counts.get(NONE_STATE, {}).items():
+        _place(grid, val, cnt)
+    grid.to_csv("csvs/total.csv")
 
-    print("\nMARGINALIZED TRUE PROBABILITY ESTIMATE")
-    for v, p in sorted(marginal.items(), key=lambda x: -x[1]):
-        print(f"{pprint(p)} {v}")
+
+def export_expected_rolls(zero_locked, one_locked, two_locked):
+    for label, lookup in [
+        ("0_locked", zero_locked),
+        ("1_locked", one_locked),
+        ("2_locked", two_locked),
+    ]:
+        grid = _make_grid()
+        for val, exp in lookup.items():
+            _place(grid, val, round(exp, 1))
+        fname = f"csvs/expected_{label}.csv"
+        grid.to_csv(fname)
+
+
+def export_summary(state_counts, state_value_counts, base_probs):
+    none_counts = state_value_counts.get(NONE_STATE, {})
+    rows = [
+        ["Metric", "Value"],
+        ["Total rolls", sum(state_counts.values())],
+        ["NONE-state rolls", state_counts.get(NONE_STATE, 0)],
+        ["NONE-state free slot observations", sum(none_counts.values())],
+        [],
+        ["LOCK STATE DISTRIBUTION", "Roll count"],
+    ]
+    for state, cnt in sorted(state_counts.items(), key=lambda x: -x[1]):
+        rows.append([",".join(sorted(state)) if state else "NONE", cnt])
+
+    rows += [[], ["BASE PROBABILITIES (NONE-state, per slot)", "p"]]
+    for val, p in sorted(base_probs.items(), key=lambda x: -x[1]):
+        rows.append([val, f"{p * 100:.4f}%"])
+
+    pd.DataFrame(rows).to_csv("csvs/summary.csv", header=False, index=False)
 
 
 def main():
     """Upload to https://docs.google.com/spreadsheets/d/1EfElTMXvO9lhbX_KAHAiAHZJ3bzjVye82a2VChNeln0"""
     os.makedirs("csvs", exist_ok=True)
     runs = load_runs()
-    state_counts, state_value_counts, global_counts, total = compute(runs)
-    marginal = compute_marginal(state_counts, state_value_counts)
-    report(state_counts, global_counts, marginal, total)
-    export_to_grid_excel(marginal, global_counts, state_counts, total)
+    state_counts, state_value_counts = compute(runs)
+    base_probs = compute_base_probs(state_value_counts)
+    zero_locked, one_locked, two_locked = compute_expected_rolls(base_probs)
 
-    one_locked, two_locked = compute_expected_rolls(state_counts, state_value_counts)
-    export_expected_rolls(one_locked, two_locked)
+    export_prob(base_probs)
+    export_total(state_value_counts)
+    export_expected_rolls(zero_locked, one_locked, two_locked)
+    export_summary(state_counts, state_value_counts, base_probs)
 
 
 if __name__ == "__main__":
