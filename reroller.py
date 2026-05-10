@@ -26,28 +26,18 @@ from PIL import Image
 from requests import get
 
 nice_names = {
-    31: "Increases max HP",
-    32: "ATK+ (fyi 60 ATK ≈ 2% Crit DMG)",
-    33: "DEF+ (fyi 45 DEF ≈ 100 HP)",
-    34: "Increases SPD",
-    35: "Increases critical rate",
-    36: "Increases critical DMG",
-    37: "Increases break effect",
-    38: "Increases HP recovery amount",
-    39: "Increases debuff hit rate",
-    40: "Increases debuff RES",
+    31: ("Increases max HP", 3),
+    32: ("ATK+ (fyi 60 ATK ≈ 2% Crit DMG)", 4),
+    33: ("DEF+ (fyi 45 DEF ≈ 100 HP)", 4),
+    34: ("Increases SPD", 2),
+    35: ("Increases critical rate", 0),
+    36: ("Increases critical DMG", 0),
+    37: ("Increases break effect", 1),
+    38: ("Increases HP recovery amount", 9),
+    39: ("Increases debuff hit rate", 3),
+    40: ("Increases debuff RES", 3),
 }
-PERMALOCK_PRIORITY = {
-    "Increases critical rate": 0,
-    "Increases critical DMG": 0,
-    "Increases break effect": 1,
-    "Increases SPD": 2,
-    "Increases max HP": 3,
-    "Increases debuff RES": 3,
-    "Increases debuff hit rate": 3,
-    "DEF+": 4,
-    "ATK+": 4,
-}
+PERMALOCK_PRIORITY = {v[0]: v[1] for v in nice_names.values()}
 PERMALOCK_EXCLUDED = {"Increases HP recovery amount"}
 NAME_PREFIXES = {"Increases", "ATK", "DEF", "Max"}
 crys_options = defaultdict(list)
@@ -72,7 +62,7 @@ with open(resource_path("getSelectionAbilityMstList.json"), "r", encoding="utf-8
     crys = json.load(f)["payload"]["mstList"]
     for c in crys:
         if c["selectionAbilityType"] == 2:
-            crys_options[nice_names[c["selectionAbilityEffectId"]]].append(
+            crys_options[nice_names[c["selectionAbilityEffectId"]][0]].append(
                 c["description"]
             )
             all_possible.add(c["description"])
@@ -157,14 +147,15 @@ def _ocr_raw(img: Image.Image, debug_log: bool, idx: int) -> str:
 
 def is_on_reroll_screen(win, debug_log) -> bool:
     hwnd = win32gui.FindWindow(None, TARGET_WINDOW)
-    img = _capture_window(hwnd)
+    img = _capture_client(hwnd)
+    w, h = img.size
     ocr_text = _ocr_raw(
         img.crop(
             (
-                0.2 * win.width,
-                0.1 * win.height,
-                0.8 * win.width,
-                0.18 * win.height,
+                0.2 * w,
+                0.05 * h,
+                0.8 * w,
+                0.15 * h,
             )
         ),
         debug_log,
@@ -185,10 +176,10 @@ def is_on_reroll_screen(win, debug_log) -> bool:
     return score >= 0.75
 
 
-def _capture_window(hwnd: int) -> Image.Image:
-    left, top, right, bottom = win32gui.GetWindowRect(hwnd)
-    w = right - left
-    h = bottom - top
+def _capture_client(hwnd: int) -> Image.Image:
+    win_left, win_top, win_right, win_bottom = win32gui.GetWindowRect(hwnd)
+    w = win_right - win_left
+    h = win_bottom - win_top
 
     hwnd_dc = win32gui.GetWindowDC(hwnd)
     mfc_dc = win32ui.CreateDCFromHandle(hwnd_dc)
@@ -197,12 +188,11 @@ def _capture_window(hwnd: int) -> Image.Image:
     bmp = win32ui.CreateBitmap()
     bmp.CreateCompatibleBitmap(mfc_dc, w, h)
     save_dc.SelectObject(bmp)
-
     ctypes.windll.user32.PrintWindow(hwnd, save_dc.GetSafeHdc(), 0x2)
 
     bmp_info = bmp.GetInfo()
     raw = bmp.GetBitmapBits(True)
-    img = Image.frombuffer(
+    full_img = Image.frombuffer(
         "RGB",
         (bmp_info["bmWidth"], bmp_info["bmHeight"]),
         raw,
@@ -217,7 +207,13 @@ def _capture_window(hwnd: int) -> Image.Image:
     mfc_dc.DeleteDC()
     win32gui.ReleaseDC(hwnd, hwnd_dc)
 
-    return img
+    client_left, client_top = win32gui.ClientToScreen(hwnd, (0, 0))
+    client_rect = win32gui.GetClientRect(hwnd)
+    cx = client_left - win_left
+    cy = client_top - win_top
+    cw = client_rect[2]
+    ch = client_rect[3]
+    return full_img.crop((cx, cy, cx + cw, cy + ch))
 
 
 def _strip_noise_prefix(text: str) -> str:
@@ -300,15 +296,16 @@ def fetch_current_crys_values(
         logger.error("Game window handle not found")
         return [None, None, None]
 
-    img = _capture_window(hwnd)
+    img = _capture_client(hwnd)
+    w, h = img.size
     current_values = []
     for i in range(3):
         crop = img.crop(
             (
-                (0.51 if check_locked else 0.25) * win.width,
-                (0.08 * i + 0.28) * win.height,
-                (0.73 if check_locked else 0.48) * win.width,
-                (0.08 * i + 0.35) * win.height,
+                (0.51 if check_locked else 0.24) * w,
+                (0.08 * i + 0.24) * h,
+                (0.73 if check_locked else 0.47) * w,
+                (0.08 * i + 0.32) * h,
             )
         )
         current_values.append(_ocr_slot(crop, debug_log, 10 + i if check_locked else i))
@@ -360,14 +357,15 @@ def click(x: float | int, y: float | int):
 
 def is_on_remove_permalock_screen(win, debug_log) -> bool:
     hwnd = win32gui.FindWindow(None, TARGET_WINDOW)
-    img = _capture_window(hwnd)
+    img = _capture_client(hwnd)
+    w, h = img.size
     ocr_text = _ocr_raw(
         img.crop(
             (
-                0.3 * win.width,
-                0.1 * win.height,
-                0.7 * win.width,
-                0.15 * win.height,
+                0.3 * w,
+                0.05 * h,
+                0.7 * w,
+                0.12 * h,
             )
         ),
         debug_log,
@@ -537,15 +535,19 @@ def reroll(
                                         v,
                                         i,
                                     )
-                                    click(
-                                        win.left + 0.85 * win.width,
-                                        win.top + (0.08 * i + 0.3) * win.height,
-                                    )
+                                    hwnd = win32gui.FindWindow(None, TARGET_WINDOW)
+                                    cl, ct = win32gui.ClientToScreen(hwnd, (0, 0))
+                                    cr = win32gui.GetClientRect(hwnd)
+                                    cw, ch = cr[2], cr[3]
 
+                                    click(
+                                        cl + 0.85 * cw,
+                                        ct + (0.08 * i + 0.3) * ch,
+                                    )
                                     click_reroll_button(win, debug_log)
                                     click(
-                                        win.left + 0.6 * win.width,
-                                        win.top + 0.75 * win.height,
+                                        cl + 0.6 * cw,
+                                        ct + 0.75 * ch,
                                     )
                                     pyautogui.sleep(3)
                                     already_locked_targets = []
@@ -784,7 +786,7 @@ def main():
         lowest_prio_cat = None
         if len(target_categories) == 3:
             lowest_prio_cat = max(
-                (PERMALOCK_PRIORITY.get(t), t) for t in target_categories
+                (PERMALOCK_PRIORITY.get(t, 999), t) for t in target_categories
             )[1]
 
         targets: list[str] = []
