@@ -26,16 +26,16 @@ from PIL import Image
 from requests import get
 
 nice_names = {
-    31: ("Increases max HP", 3),
-    32: ("ATK+ (fyi 60 ATK ≈ 2% Crit DMG)", 4),
-    33: ("DEF+ (fyi 45 DEF ≈ 100 HP)", 4),
-    34: ("Increases SPD", 2),
     35: ("Increases critical rate", 0),
     36: ("Increases critical DMG", 0),
     37: ("Increases break effect", 1),
-    38: ("Increases HP recovery amount", 9),
-    39: ("Increases debuff hit rate", 3),
+    34: ("Increases SPD", 2),
+    31: ("Increases max HP", 3),
     40: ("Increases debuff RES", 3),
+    39: ("Increases debuff hit rate", 3),
+    33: ("DEF+ (fyi 45 DEF ≈ 100 HP)", 4),
+    32: ("ATK+ (fyi 60 ATK ≈ 2% Crit DMG)", 4),
+    38: ("Increases HP recovery amount", 9),
 }
 PERMALOCK_PRIORITY = {v[0]: v[1] for v in nice_names.values()}
 PERMALOCK_EXCLUDED = {"Increases HP recovery amount"}
