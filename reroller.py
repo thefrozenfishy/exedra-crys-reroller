@@ -22,7 +22,7 @@ import pygetwindow
 import pytesseract
 import win32gui
 import win32ui
-from PIL import Image
+from PIL import Image, ImageDraw
 from requests import get
 
 nice_names = {
@@ -149,19 +149,18 @@ def is_on_reroll_screen(win, debug_log) -> bool:
     hwnd = win32gui.FindWindow(None, TARGET_WINDOW)
     img = _capture_client(hwnd)
     w, h = img.size
-    ocr_text = _ocr_raw(
-        img.crop(
-            (
-                0.2 * w,
-                0.05 * h,
-                0.8 * w,
-                0.15 * h,
-            )
-        ),
-        debug_log,
-        99,
+    coords = (
+        0.2 * w,
+        0.05 * h,
+        0.8 * w,
+        0.15 * h,
     )
+    ocr_text = _ocr_raw(img.crop(coords), debug_log, 99)
 
+    if debug_log:
+        draw = ImageDraw.Draw(img)
+        draw.rectangle(coords, outline="green", width=2)
+        img.save("debug/reroll_screen.png")
     if not ocr_text:
         logger.debug("No reroll text")
         return False
@@ -300,15 +299,19 @@ def fetch_current_crys_values(
     w, h = img.size
     current_values = []
     for i in range(3):
-        crop = img.crop(
-            (
-                (0.51 if check_locked else 0.24) * w,
-                (0.08 * i + 0.24) * h,
-                (0.73 if check_locked else 0.47) * w,
-                (0.08 * i + 0.32) * h,
-            )
+        coords = (
+            (0.51 if check_locked else 0.24) * w,
+            (0.08 * i + 0.24) * h,
+            (0.73 if check_locked else 0.47) * w,
+            (0.08 * i + 0.32) * h,
         )
+        if debug_log:
+            draw = ImageDraw.Draw(img)
+            draw.rectangle(coords, outline="green", width=2)
+        crop = img.crop(coords)
         current_values.append(_ocr_slot(crop, debug_log, 10 + i if check_locked else i))
+    if debug_log:
+        img.save(f"debug/crys_vals_{'' if check_locked else 'not_'}locked.png")
     return current_values
 
 
@@ -359,19 +362,12 @@ def is_on_remove_permalock_screen(win, debug_log) -> bool:
     hwnd = win32gui.FindWindow(None, TARGET_WINDOW)
     img = _capture_client(hwnd)
     w, h = img.size
-    ocr_text = _ocr_raw(
-        img.crop(
-            (
-                0.3 * w,
-                0.05 * h,
-                0.7 * w,
-                0.12 * h,
-            )
-        ),
-        debug_log,
-        79,
-    )
-
+    coords = (0.3 * w, 0.05 * h, 0.7 * w, 0.12 * h)
+    ocr_text = _ocr_raw(img.crop(coords), debug_log, 79)
+    if debug_log:
+        draw = ImageDraw.Draw(img)
+        draw.rectangle(coords, outline="green", width=2)
+        img.save("debug/permalock_remove.png")
     if not ocr_text:
         logger.debug("No permalock text")
         return False
@@ -399,6 +395,13 @@ def click_reroll_button(win, debug_log) -> None:
     pydirectinput.press(key)
     pyautogui.sleep(0.02)
     ctypes.windll.user32.SetForegroundWindow(prev_hwnd)
+
+
+def _reroll_wrapper(*args, **kwargs):
+    try:
+        reroll(*args, **kwargs)
+    except Exception as e:
+        logger.exception("Reroll thread crashed", exc_info=e)
 
 
 def reroll(
@@ -817,7 +820,7 @@ def main():
 
         stop_flag.clear()
         reroll_thread = threading.Thread(
-            target=reroll,
+            target=_reroll_wrapper,
             args=(
                 win,
                 targets,
@@ -902,4 +905,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        logger.exception("A critical error occurred", exc_info=e)
+        input("Press Enter to exit...")
