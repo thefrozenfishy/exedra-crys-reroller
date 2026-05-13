@@ -301,9 +301,9 @@ def fetch_current_crys_values(
     for i in range(3):
         coords = (
             (0.51 if check_locked else 0.24) * w,
-            (0.08 * i + 0.24) * h,
+            (0.09 * i + 0.24) * h,
             (0.73 if check_locked else 0.47) * w,
-            (0.08 * i + 0.32) * h,
+            (0.09 * i + 0.32) * h,
         )
         if debug_log:
             draw = ImageDraw.Draw(img)
