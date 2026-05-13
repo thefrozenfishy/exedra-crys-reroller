@@ -40,7 +40,7 @@ jobs:
           git push origin "version-${{ github.run_number }}"
 
       - name: Build EXE with PyInstaller
-        run: pyinstaller --add-data "getSelectionAbilityMstList.json:." --add-data "icon.ico:." --icon=icon.ico --onefile --noconsole --name "reroller-v${{ github.run_number }}" reroller.py
+        run: pyinstaller --add-data "getSelectionAbilityMstList.json:." --add-data "icon.ico:." --icon=icon.ico --onefile --noconsole --name "exedra-crys-reroller" reroller.py
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
