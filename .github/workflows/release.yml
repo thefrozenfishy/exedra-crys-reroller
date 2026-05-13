@@ -46,6 +46,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: version-${{ github.run_number }}
-          files: dist/reroller-v${{ github.run_number }}.exe
+          files: dist/exedra-crys-reroller.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
