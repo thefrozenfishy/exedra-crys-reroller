@@ -906,6 +906,7 @@ def main():
 
 if __name__ == "__main__":
     try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)
         main()
     except Exception as e:
         logger.exception("A critical error occurred", exc_info=e)
