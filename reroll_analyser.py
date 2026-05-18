@@ -1,11 +1,14 @@
 import json
 import os
+import random
 import zipfile
 from collections import defaultdict
 from pathlib import Path
 
 import pandas as pd
 
+SLOTS = 3
+CHAIN_REQ = 3
 STAT_CATEGORIES = {
     "Max HP": [
         "Max HP +40",
@@ -94,9 +97,7 @@ STAT_CATEGORIES = {
         "Increases HP recovery amount by 3%.",
         "Increases HP recovery amount by 3.5%.",
         "Increases HP recovery amount by 4%.",
-        "Increases HP recovery amount by 4.5%.",
         "Increases HP recovery amount by 8%.",
-        "Increases HP recovery amount by ...",
     ],
     "Debuff Hit Rate": [
         "Increases debuff hit rate by 1%.",
@@ -123,13 +124,12 @@ STAT_CATEGORIES = {
         "Increases Debuff RES by 8%.",
     ],
 }
-
-VALUE_TO_CATEGORY = {}
-for cat, vals in STAT_CATEGORIES.items():
-    for v in vals:
-        VALUE_TO_CATEGORY[v] = cat
-
 NONE_STATE = frozenset()
+NONE_STATE = frozenset()
+VALUE_TO_CATEGORY = {}
+for category, values in STAT_CATEGORIES.items():
+    for value in values:
+        VALUE_TO_CATEGORY[value] = category
 
 
 def load_runs():
@@ -167,28 +167,29 @@ def is_duplicate(a, b):
 
 def detect_locked(rows):
     locked = set()
-    for s in ("s1", "s2", "s3"):
-        if len(val_set := set(r[s] for r in rows)) == 1:
-            locked.add(VALUE_TO_CATEGORY[val_set.pop()])
+    for slot in ("s1", "s2", "s3"):
+        vals = set(r[slot] for r in rows)
+        if len(vals) == 1:
+            val = vals.pop()
+            locked.add(VALUE_TO_CATEGORY[val])
     return frozenset(locked)
 
 
 def process_run(run):
-    chain_req = 3
     no_dupes = [run[0]]
     for i in range(1, len(run)):
         if not is_duplicate(run[i - 1], run[i]):
             no_dupes.append(run[i])
-    if len(no_dupes) <= chain_req:
+    if len(no_dupes) <= CHAIN_REQ:
         return []
 
     cleaned = []
-    for i in range(chain_req):
-        no_dupes[i]["locked"] = detect_locked(no_dupes[i : i + chain_req])
+    for i in range(CHAIN_REQ):
+        no_dupes[i]["locked"] = detect_locked(no_dupes[i : i + CHAIN_REQ])
         cleaned.append(no_dupes[i])
 
-    for i in range(chain_req, len(no_dupes)):
-        no_dupes[i]["locked"] = detect_locked(no_dupes[i - chain_req : i])
+    for i in range(CHAIN_REQ, len(no_dupes)):
+        no_dupes[i]["locked"] = detect_locked(no_dupes[i - CHAIN_REQ : i])
         cleaned.append(no_dupes[i])
 
     return cleaned
@@ -210,105 +211,142 @@ def compute(runs):
     return state_counts, state_value_counts
 
 
-def compute_base_probs(state_value_counts):
-    none_counts = state_value_counts.get(NONE_STATE, {})
-    total = sum(none_counts.values())
-    if total == 0:
-        raise ValueError(
-            "No 0-locked (NONE) rolls found -- cannot estimate base probabilities."
-        )
-    return {val: cnt / total for val, cnt in none_counts.items()}
+def estimate_category_weights(state_value_counts):
+    none_counts = state_value_counts[NONE_STATE]
+    category_counts = defaultdict(int)
+    for val, count in none_counts.items():
+        category_counts[VALUE_TO_CATEGORY[val]] += count
+    total = sum(category_counts.values())
+    return {category: count / total for category, count in category_counts.items()}
 
 
-def compute_expected_rolls(base_probs):
-    zero_locked = {}
-    one_locked = {}
-    two_locked = {}
-    for val, p in base_probs.items():
-        if p > 0:
-            zero_locked[val] = 1.0 / (p * 3)
-            one_locked[val] = 1.0 / (p * 2)
-            two_locked[val] = 1.0 / (p * 1)
-    return zero_locked, one_locked, two_locked
+def build_tier_weights(state_value_counts):
+    none_counts = state_value_counts[NONE_STATE]
+    grouped = defaultdict(lambda: defaultdict(int))
+    for val, count in none_counts.items():
+        grouped[VALUE_TO_CATEGORY[val]][val] += count
+    result = {}
+    for category, vals in grouped.items():
+        total = sum(vals.values())
+        result[category] = {val: cnt / total for val, cnt in vals.items()}
+    return result
 
 
-def _make_grid():
-    categories = list(STAT_CATEGORIES.keys())
-    grid = pd.DataFrame(None, index=range(1, 11), columns=categories, dtype=object)
-    grid.index.name = "Tier"
-    return grid
+def weighted_choice(weight_map):
+    total = sum(weight_map.values())
+    r = random.uniform(0, total)
+    cumulative = 0
+    for key, value in weight_map.items():
+        cumulative += value
+        if r <= cumulative:
+            return key
+    return list(weight_map)[-1]
 
 
-def _place(grid, val, value):
-    cat = VALUE_TO_CATEGORY.get(val)
-    if cat is None:
-        return
-    try:
-        tier = STAT_CATEGORIES[cat].index(val) + 1
-        grid.at[tier, cat] = value
-    except ValueError:
-        pass
+def generate_roll(category_weights, tier_weights, locked=None):
+    if locked is None:
+        locked = []
+
+    result = list(locked)
+    used_categories = {VALUE_TO_CATEGORY[v] for v in result}
+    available_categories = [c for c in category_weights if c not in used_categories]
+    remaining = SLOTS - len(result)
+    for _ in range(remaining):
+        cat_weights = {c: category_weights[c] for c in available_categories}
+        category = weighted_choice(cat_weights)
+        value = weighted_choice(tier_weights[category])
+        result.append(value)
+        available_categories.remove(category)
+    return result
 
 
-def export_prob(base_probs):
-    grid = _make_grid()
-    for val, p in base_probs.items():
-        _place(grid, val, round(p * 3, 4))
-    grid.to_csv("csvs/prob.csv")
+def estimate_probability(
+    target_values, category_weights, tier_weights, locked=None, simulations=200_000
+):
+    hits = 0
+    target_values = set(target_values)
+    for _ in range(simulations):
+        roll = generate_roll(category_weights, tier_weights, locked)
+        if target_values.issubset(set(roll)):
+            hits += 1
+    return hits / simulations
+
+
+def expected_rolls(
+    target_values, category_weights, tier_weights, locked=None, simulations=200_000
+):
+    p = estimate_probability(
+        target_values, category_weights, tier_weights, locked, simulations
+    )
+    if p <= 0:
+        return float("inf")
+    return 1 / p
 
 
 def export_total(state_value_counts):
-    grid = _make_grid()
-    for val, cnt in state_value_counts.get(NONE_STATE, {}).items():
-        _place(grid, val, cnt)
-    grid.to_csv("csvs/total.csv")
+    categories = list(STAT_CATEGORIES.keys())
+    grid = pd.DataFrame(
+        None,
+        index=range(1, 11),
+        columns=categories,
+        dtype=object,
+    )
+    grid.index.name = "Tier"
+    for val, cnt in state_value_counts[NONE_STATE].items():
+        category = VALUE_TO_CATEGORY[val]
+        try:
+            tier = STAT_CATEGORIES[category].index(val) + 1
+            grid.at[tier, category] = cnt
+        except ValueError:
+            pass
+    grid.to_csv("csvs/total.csv", sep=";")
 
 
-def export_expected_rolls(zero_locked, one_locked, two_locked):
-    for label, lookup in [
-        ("0_locked", zero_locked),
-        ("1_locked", one_locked),
-        ("2_locked", two_locked),
-    ]:
-        grid = _make_grid()
-        for val, exp in lookup.items():
-            _place(grid, val, round(exp, 1))
-        fname = f"csvs/expected_{label}.csv"
-        grid.to_csv(fname)
+def export_expected_rolls(category_weights, tier_weights):
+    categories = list(STAT_CATEGORIES.keys())
+    grid = pd.DataFrame(None, index=range(1, 11), columns=categories, dtype=object)
+    grid.index.name = "Tier"
+    for category, values in STAT_CATEGORIES.items():
+        for val in values:
+            probability = estimate_probability([val], category_weights, tier_weights)
+            exp = float("inf") if probability <= 0 else 1 / probability
+            try:
+                tier = values.index(val) + 1
+                grid.at[tier, category] = round(exp, 1)
+            except ValueError:
+                pass
+    grid.to_csv("csvs/expected_rolls.csv", sep=";")
 
 
-def export_summary(state_counts, state_value_counts, base_probs):
-    none_counts = state_value_counts.get(NONE_STATE, {})
+def export_summary(state_counts, category_weights, tier_weights):
     rows = [
         ["Metric", "Value"],
         ["Total rolls", sum(state_counts.values())],
-        ["NONE-state rolls", state_counts.get(NONE_STATE, 0)],
-        ["NONE-state free slot observations", sum(none_counts.values())],
         [],
-        ["LOCK STATE DISTRIBUTION", "Roll count"],
+        ["Category", "Estimated Weight"],
     ]
-    for state, cnt in sorted(state_counts.items(), key=lambda x: -x[1]):
-        rows.append([",".join(sorted(state)) if state else "NONE", cnt])
-
-    rows += [[], ["BASE PROBABILITIES (NONE-state, per slot)", "p"]]
-    for val, p in sorted(base_probs.items(), key=lambda x: -x[1]):
-        rows.append([val, f"{p * 100:.4f}%"])
-
-    pd.DataFrame(rows).to_csv("csvs/summary.csv", header=False, index=False)
+    for category, p in sorted(category_weights.items(), key=lambda x: -x[1]):
+        rows.append([category, f"{p * 100:.4f}%"])
+    rows += [[], ["Tier Distributions", ""]]
+    for category, weights in tier_weights.items():
+        rows.append([category, ""])
+        for val, p in sorted(weights.items(), key=lambda x: -x[1]):
+            rows.append([val, f"{p * 100:.4f}%"])
+    pd.DataFrame(rows).to_csv("csvs/summary.csv", header=False, index=False, sep=";")
 
 
 def main():
-    """Upload to https://docs.google.com/spreadsheets/d/1EfElTMXvO9lhbX_KAHAiAHZJ3bzjVye82a2VChNeln0"""
     os.makedirs("csvs", exist_ok=True)
     runs = load_runs()
     state_counts, state_value_counts = compute(runs)
-    base_probs = compute_base_probs(state_value_counts)
-    zero_locked, one_locked, two_locked = compute_expected_rolls(base_probs)
+    category_weights = estimate_category_weights(state_value_counts)
+    tier_weights = build_tier_weights(state_value_counts)
 
-    export_prob(base_probs)
     export_total(state_value_counts)
-    export_expected_rolls(zero_locked, one_locked, two_locked)
-    export_summary(state_counts, state_value_counts, base_probs)
+    export_expected_rolls(category_weights, tier_weights)
+    export_summary(state_counts, category_weights, tier_weights)
+
+    print("Done.")
 
 
 if __name__ == "__main__":
