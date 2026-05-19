@@ -1,119 +1,119 @@
 Metric;Value
-Total rolls;12266
+Total rolls;12178
 ;
 Category;Estimated Weight
-ATK;13.2507%
-Break Effect;4.3046%
-CRIT DMG;8.8238%
-CRIT Rate;9.2885%
-DEF;13.4274%
-Debuff Hit Rate;11.4599%
-Debuff RES;11.5169%
-HP Recovery;11.3892%
-Max HP;13.3078%
-SPD;3.2312%
+ATK;13.2616%
+Break Effect;4.3220%
+CRIT DMG;8.8274%
+CRIT Rate;9.2024%
+DEF;13.4532%
+Debuff Hit Rate;11.4742%
+Debuff RES;11.5481%
+HP Recovery;11.3976%
+Max HP;13.3136%
+SPD;3.1998%
 ;
 Tier Distributions;
 ATK;
-ATK +6;20.2010%
-ATK +7;14.2740%
-ATK +8;12.5923%
-ATK +9;9.9057%
-ATK +10;8.3265%
-ATK +12;7.7933%
-ATK +15;7.6087%
-ATK +20;6.8909%
-ATK +30;6.6038%
-Increases ATK by 60.;5.8039%
+ATK +6;20.2270%
+ATK +7;14.2208%
+ATK +8;12.6316%
+ATK +9;9.9278%
+ATK +10;8.3179%
+ATK +12;7.7812%
+ATK +15;7.5748%
+ATK +20;6.8731%
+ATK +30;6.6047%
+Increases ATK by 60.;5.8411%
 Break Effect;
-Increases break effect by 5%.;21.2753%
-Increases break effect by 5.2%.;14.3939%
-Increases break effect by 5.4%.;11.6793%
-Increases break effect by 5.6%.;9.9747%
-Increases break effect by 5.8%.;9.5328%
-Increases break effect by 6%.;8.4596%
-Increases break effect by 6.2%.;6.9444%
-Increases break effect by 6.4%.;6.4394%
-Increases break effect by 6.6%.;6.1869%
-Increases break effect by 12%.;5.1136%
+Increases break effect by 5%.;21.2160%
+Increases break effect by 5.2%.;14.3762%
+Increases break effect by 5.4%.;11.7163%
+Increases break effect by 5.6%.;10.0063%
+Increases break effect by 5.8%.;9.4997%
+Increases break effect by 6%.;8.4864%
+Increases break effect by 6.2%.;6.9031%
+Increases break effect by 6.4%.;6.4598%
+Increases break effect by 6.6%.;6.2065%
+Increases break effect by 12%.;5.1298%
 CRIT DMG;
-Increases critical DMG by 0.9%.;31.0132%
-Increases critical DMG by 1.8%.;22.3283%
-Increases critical DMG by 2.7%.;14.1361%
-Increases critical DMG by 3.6%.;12.5654%
-Increases critical DMG by 4.5%.;5.6976%
-Increases critical DMG by 5.4%.;4.2809%
-Increases critical DMG by 6.3%.;4.0345%
-Increases critical DMG by 7.2%.;2.6794%
-Increases critical DMG by 8.1%.;2.1558%
-Increases critical DMG by 10%.;1.1087%
+Increases critical DMG by 0.9%.;31.0698%
+Increases critical DMG by 1.8%.;22.4806%
+Increases critical DMG by 2.7%.;14.2326%
+Increases critical DMG by 3.6%.;12.5891%
+Increases critical DMG by 4.5%.;5.7054%
+Increases critical DMG by 5.4%.;4.2791%
+Increases critical DMG by 6.3%.;4.0310%
+Increases critical DMG by 7.2%.;2.6667%
+Increases critical DMG by 8.1%.;2.1085%
+Increases critical DMG by 10%.;0.8372%
 CRIT Rate;
-Increases critical rate by 0.5%.;29.4032%
-Increases critical rate by 1%.;20.9479%
-Increases critical rate by 1.5%.;15.1843%
-Increases critical rate by 2%.;11.0298%
-Increases critical rate by 2.5%.;6.0562%
-Increases critical rate by 3%.;5.0322%
-Increases critical rate by 3.5%.;4.2422%
-Increases critical rate by 4%.;3.2475%
-Increases critical rate by 4.5%.;2.4283%
-Increases critical rate by 5%.;2.4283%
+Increases critical rate by 0.5%.;29.8037%
+Increases critical rate by 1%.;21.2671%
+Increases critical rate by 1.5%.;15.4372%
+Increases critical rate by 2%.;11.2136%
+Increases critical rate by 2.5%.;6.1570%
+Increases critical rate by 3%.;5.1160%
+Increases critical rate by 3.5%.;4.3129%
+Increases critical rate by 4%.;3.3016%
+Increases critical rate by 4.5%.;2.2903%
+Increases critical rate by 5%.;1.1005%
 DEF;
-DEF +5;19.8138%
-DEF +6;14.1874%
-DEF +7;12.8921%
-DEF +8;10.4635%
-DEF +9;9.0872%
-DEF +10;8.0753%
-DEF +11;7.0633%
-DEF +15;6.6181%
-DEF +23;5.9097%
-DEF +45;5.8895%
+DEF +5;19.8372%
+DEF +6;14.2218%
+DEF +7;12.8993%
+DEF +8;10.4374%
+DEF +9;9.0946%
+DEF +10;8.0773%
+DEF +11;7.0397%
+DEF +15;6.6328%
+DEF +45;5.8800%
+DEF +23;5.8800%
 Debuff Hit Rate;
-Increases debuff hit rate by 1%.;19.6822%
-Increases debuff hit rate by 1.2%.;14.0384%
-Increases debuff hit rate by 1.5%.;12.4496%
-Increases debuff hit rate by 2%.;9.9834%
-Increases debuff hit rate by 2.5%.;8.5132%
-Increases debuff hit rate by 3%.;7.9677%
-Increases debuff hit rate by 3.5%.;7.6358%
-Increases debuff hit rate by 4%.;7.3038%
-Increases debuff hit rate by 4.5%.;6.4027%
-Increases debuff hit rate by 8%.;6.0232%
+Increases debuff hit rate by 1%.;19.6088%
+Increases debuff hit rate by 1.2%.;14.0506%
+Increases debuff hit rate by 1.5%.;12.4284%
+Increases debuff hit rate by 2%.;10.0191%
+Increases debuff hit rate by 2.5%.;8.4924%
+Increases debuff hit rate by 3%.;7.9914%
+Increases debuff hit rate by 3.5%.;7.6574%
+Increases debuff hit rate by 4%.;7.2758%
+Increases debuff hit rate by 4.5%.;6.4170%
+Increases debuff hit rate by 8%.;6.0592%
 Debuff RES;
-Increases debuff RES by 1%.;18.4285%
-Increases debuff RES by 1.2%.;15.7386%
-Increases debuff RES by 1.5%.;11.7272%
-Increases debuff RES by 2%.;9.7688%
-Increases debuff RES by 2.5%.;8.8485%
-Increases debuff RES by 3%.;8.0934%
-Increases debuff RES by 3.5%.;7.7867%
-Increases debuff RES by 4%.;7.4328%
-Increases debuff RES by 4.5%.;6.3945%
-Increases Debuff RES by 8%.;5.7810%
+Increases debuff RES by 1%.;18.4404%
+Increases debuff RES by 1.2%.;15.7857%
+Increases debuff RES by 1.5%.;11.7089%
+Increases debuff RES by 2%.;9.7890%
+Increases debuff RES by 2.5%.;8.8647%
+Increases debuff RES by 3%.;8.1299%
+Increases debuff RES by 3.5%.;7.7032%
+Increases debuff RES by 4%.;7.4188%
+Increases debuff RES by 4.5%.;6.3759%
+Increases Debuff RES by 8%.;5.7834%
 HP Recovery;
-Increases HP recovery amount by 1%.;18.9692%
-Increases HP recovery amount by 1.2%.;14.7459%
-Increases HP recovery amount by 8%.;12.2405%
-Increases HP recovery amount by 1.5%.;12.2167%
-Increases HP recovery amount by 2%.;9.9260%
-Increases HP recovery amount by 2.5%.;8.9000%
-Increases HP recovery amount by 3.5%.;8.3990%
-Increases HP recovery amount by 3%.;7.7786%
-Increases HP recovery amount by 4%.;6.8241%
+Increases HP recovery amount by 1%.;18.9481%
+Increases HP recovery amount by 1.2%.;14.6974%
+Increases HP recovery amount by 1.5%.;12.2478%
+Increases HP recovery amount by 8%.;12.1998%
+Increases HP recovery amount by 2%.;9.9424%
+Increases HP recovery amount by 2.5%.;8.8857%
+Increases HP recovery amount by 3.5%.;8.4054%
+Increases HP recovery amount by 3%.;7.8050%
+Increases HP recovery amount by 4%.;6.8684%
 Max HP;
-Max HP +40;19.8080%
-Max HP +82;15.2951%
-Max HP +124;12.8650%
-Max HP +166;9.3731%
-Max HP +208;8.5971%
-Max HP +251;8.1274%
-Max HP +293;7.0247%
-Max HP +335;6.6776%
-Max HP +420;6.2079%
-Max HP +377;6.0241%
+Max HP +40;19.8602%
+Max HP +82;15.3166%
+Max HP +124;12.8289%
+Max HP +166;9.3956%
+Max HP +208;8.6143%
+Max HP +251;8.1414%
+Max HP +293;7.0518%
+Max HP +335;6.5995%
+Max HP +420;6.1883%
+Max HP +377;6.0033%
 SPD;
-Increases SPD by 1.;39.1926%
-Increases SPD by 2.;28.7637%
-Increases SPD by 3.;20.7738%
-Increases SPD by 4.;11.2700%
+Increases SPD by 1.;39.2643%
+Increases SPD by 2.;29.0847%
+Increases SPD by 3.;20.7870%
+Increases SPD by 4.;10.8640%

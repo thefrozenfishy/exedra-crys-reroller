@@ -9,6 +9,7 @@ import pandas as pd
 
 SLOTS = 3
 CHAIN_REQ = 3
+SIMULATIONS = 200_000
 STAT_CATEGORIES = {
     "Max HP": [
         "Max HP +40",
@@ -174,7 +175,12 @@ def process_run(run):
         return []
 
     locked_indices = {slot: set() for slot in ("s1", "s2", "s3")}
+
     for slot in ("s1", "s2", "s3"):
+        if run[0][slot] == run[1][slot]:
+            # 0 follows a forward looking rule so just do it manually
+            locked_indices[slot].add(0)
+
         i = 0
         while i < len(no_dupes):
             j = i + 1
@@ -294,7 +300,7 @@ def generate_roll(category_weights, tier_weights, locked=None):
 
 
 def estimate_probability(
-    target_values, category_weights, tier_weights, locked=None, simulations=200_000
+    target_values, category_weights, tier_weights, locked=None, simulations=SIMULATIONS
 ):
     hits = 0
     target_values = set(target_values)
@@ -306,7 +312,7 @@ def estimate_probability(
 
 
 def expected_rolls(
-    target_values, category_weights, tier_weights, locked=None, simulations=200_000
+    target_values, category_weights, tier_weights, locked=None, simulations=SIMULATIONS
 ):
     p = estimate_probability(
         target_values, category_weights, tier_weights, locked, simulations
@@ -395,11 +401,7 @@ def main():
     category_weights = estimate_category_weights(state_value_counts)
     tier_weights = build_tier_weights(state_value_counts)
 
-    export_total(state_value_counts, filename="csvs/total.csv")
-    export_expected_rolls(
-        category_weights, tier_weights, filename="csvs/expected_rolls.csv"
-    )
-    export_summary(sum(state_counts.values()), category_weights, tier_weights)
+    # No locked states are guaranteed to be correct
 
     category_weights_0 = estimate_category_weights(
         state_value_counts, max_locked_slots=0
@@ -418,6 +420,14 @@ def main():
         tier_weights_0,
         filename="csvs/summary_0.csv",
     )
+
+    # Adding in locked states I _think_ is fine but unsure
+
+    export_total(state_value_counts, filename="csvs/total.csv")
+    export_expected_rolls(
+        category_weights, tier_weights, filename="csvs/expected_rolls.csv"
+    )
+    export_summary(sum(state_counts.values()), category_weights, tier_weights)
 
 
 if __name__ == "__main__":
