@@ -165,16 +165,6 @@ def is_duplicate(a, b):
     return a["s1"] == b["s1"] and a["s2"] == b["s2"] and a["s3"] == b["s3"]
 
 
-def detect_locked(rows):
-    locked = set()
-    for slot in ("s1", "s2", "s3"):
-        vals = set(r[slot] for r in rows)
-        if len(vals) == 1:
-            val = vals.pop()
-            locked.add(VALUE_TO_CATEGORY[val])
-    return frozenset(locked)
-
-
 def process_run(run):
     no_dupes = [run[0]]
     for i in range(1, len(run)):
@@ -183,16 +173,29 @@ def process_run(run):
     if len(no_dupes) <= CHAIN_REQ:
         return []
 
-    cleaned = []
-    for i in range(len(no_dupes) - CHAIN_REQ):
-        no_dupes[i]["locked"] = detect_locked(no_dupes[i : i + CHAIN_REQ])
-        cleaned.append(no_dupes[i])
+    locked_indices = {slot: set() for slot in ("s1", "s2", "s3")}
+    for slot in ("s1", "s2", "s3"):
+        i = 0
+        while i < len(no_dupes):
+            j = i + 1
+            while j < len(no_dupes) and no_dupes[j][slot] == no_dupes[i][slot]:
+                j += 1
+            run_length = j - i
+            if run_length >= CHAIN_REQ:
+                for k in range(i + 1, j):
+                    locked_indices[slot].add(k)
+            i = j
 
-    for i in range(len(no_dupes) - CHAIN_REQ, len(no_dupes)):
-        no_dupes[i]["locked"] = detect_locked(
-            no_dupes[min(i, len(no_dupes) - 2) : len(no_dupes)]
+    cleaned = []
+    for i, row in enumerate(no_dupes):
+        locked = frozenset(
+            VALUE_TO_CATEGORY[row[slot]]
+            for slot in ("s1", "s2", "s3")
+            if i in locked_indices[slot]
         )
-        cleaned.append(no_dupes[i])
+        row["locked"] = locked
+        cleaned.append(row)
+        print(cleaned[-1]["locked"])
 
     return cleaned
 
