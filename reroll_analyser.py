@@ -215,19 +215,48 @@ def compute(runs):
     return state_counts, state_value_counts
 
 
-def estimate_category_weights(state_value_counts):
-    none_counts = state_value_counts[NONE_STATE]
+def aggregate_unlocked_counts(state_value_counts):
+    aggregated = defaultdict(int)
+    for counts in state_value_counts.values():
+        for val, count in counts.items():
+            aggregated[val] += count
+    return aggregated
+
+
+def aggregate_unlocked_counts_by_locked_slots(state_value_counts, max_locked_slots):
+    aggregated = defaultdict(int)
+    for state, counts in state_value_counts.items():
+        if len(state) <= max_locked_slots:
+            for val, count in counts.items():
+                aggregated[val] += count
+    return aggregated
+
+
+def estimate_category_weights(state_value_counts, max_locked_slots=None):
+    print("Estimating weights for", max_locked_slots)
+    if max_locked_slots is None:
+        unlocked_counts = aggregate_unlocked_counts(state_value_counts)
+    else:
+        unlocked_counts = aggregate_unlocked_counts_by_locked_slots(
+            state_value_counts, max_locked_slots
+        )
     category_counts = defaultdict(int)
-    for val, count in none_counts.items():
+    for val, count in unlocked_counts.items():
         category_counts[VALUE_TO_CATEGORY[val]] += count
     total = sum(category_counts.values())
     return {category: count / total for category, count in category_counts.items()}
 
 
-def build_tier_weights(state_value_counts):
-    none_counts = state_value_counts[NONE_STATE]
+def build_tier_weights(state_value_counts, max_locked_slots=None):
+    print("Building weights for", max_locked_slots)
+    if max_locked_slots is None:
+        unlocked_counts = aggregate_unlocked_counts(state_value_counts)
+    else:
+        unlocked_counts = aggregate_unlocked_counts_by_locked_slots(
+            state_value_counts, max_locked_slots
+        )
     grouped = defaultdict(lambda: defaultdict(int))
-    for val, count in none_counts.items():
+    for val, count in unlocked_counts.items():
         grouped[VALUE_TO_CATEGORY[val]][val] += count
     result = {}
     for category, vals in grouped.items():
@@ -287,7 +316,8 @@ def expected_rolls(
     return 1 / p
 
 
-def export_total(state_value_counts):
+def export_total(state_value_counts, filename="csvs/total.csv", max_locked_slots=None):
+    print("Exporting", filename)
     categories = list(STAT_CATEGORIES.keys())
     grid = pd.DataFrame(
         None,
@@ -296,61 +326,98 @@ def export_total(state_value_counts):
         dtype=object,
     )
     grid.index.name = "Tier"
-    for val, cnt in state_value_counts[NONE_STATE].items():
+    if max_locked_slots is None:
+        unlocked_counts = aggregate_unlocked_counts(state_value_counts)
+    else:
+        unlocked_counts = aggregate_unlocked_counts_by_locked_slots(
+            state_value_counts, max_locked_slots
+        )
+    for val, cnt in unlocked_counts.items():
         category = VALUE_TO_CATEGORY[val]
         try:
             tier = STAT_CATEGORIES[category].index(val) + 1
             grid.at[tier, category] = cnt
         except ValueError:
             pass
-    grid.to_csv("csvs/total.csv", sep=";")
+    grid.to_csv(filename, sep=";")
 
 
-def export_expected_rolls(category_weights, tier_weights):
+def export_expected_rolls(
+    category_weights, tier_weights, filename="csvs/expected_rolls.csv"
+):
+    print("Exporting", filename)
     categories = list(STAT_CATEGORIES.keys())
     grid = pd.DataFrame(None, index=range(1, 11), columns=categories, dtype=object)
     grid.index.name = "Tier"
     for category, values in STAT_CATEGORIES.items():
         for val in values:
-            probability = estimate_probability([val], category_weights, tier_weights)
+            probability = estimate_probability(
+                [val], category_weights, tier_weights, simulations=50_000
+            )
             exp = float("inf") if probability <= 0 else 1 / probability
             try:
                 tier = values.index(val) + 1
                 grid.at[tier, category] = round(exp, 1)
             except ValueError:
                 pass
-    grid.to_csv("csvs/expected_rolls.csv", sep=";")
+    grid.to_csv(filename, sep=";")
 
 
-def export_summary(state_counts, category_weights, tier_weights):
+def export_summary(
+    total_rolls: int, category_weights, tier_weights, filename="csvs/summary.csv"
+):
+    print("Exporting", filename)
     rows = [
         ["Metric", "Value"],
-        ["Total rolls", sum(state_counts.values())],
+        ["Total rolls", total_rolls],
         [],
         ["Category", "Estimated Weight"],
     ]
-    for category, p in sorted(category_weights.items(), key=lambda x: -x[1]):
-        rows.append([category, f"{p * 100:.4f}%"])
+    for category in sorted(category_weights.keys()):
+        rows.append([category, f"{category_weights[category] * 100:.4f}%"])
     rows += [[], ["Tier Distributions", ""]]
-    for category, weights in tier_weights.items():
+    for category in sorted(tier_weights.keys()):
         rows.append([category, ""])
-        for val, p in sorted(weights.items(), key=lambda x: -x[1]):
+        for val, p in sorted(tier_weights[category].items(), key=lambda x: -x[1]):
             rows.append([val, f"{p * 100:.4f}%"])
-    pd.DataFrame(rows).to_csv("csvs/summary.csv", header=False, index=False, sep=";")
+    pd.DataFrame(rows).to_csv(filename, header=False, index=False, sep=";")
 
 
 def main():
+    """
+    Upload to https://docs.google.com/spreadsheets/d/1EfElTMXvO9lhbX_KAHAiAHZJ3bzjVye82a2VChNeln0
+    Use the 0s so I know I didnt fuck up any maths..?
+    """
     os.makedirs("csvs", exist_ok=True)
     runs = load_runs()
     state_counts, state_value_counts = compute(runs)
+
     category_weights = estimate_category_weights(state_value_counts)
     tier_weights = build_tier_weights(state_value_counts)
 
-    export_total(state_value_counts)
-    export_expected_rolls(category_weights, tier_weights)
-    export_summary(state_counts, category_weights, tier_weights)
+    export_total(state_value_counts, filename="csvs/total.csv")
+    export_expected_rolls(
+        category_weights, tier_weights, filename="csvs/expected_rolls.csv"
+    )
+    export_summary(sum(state_counts.values()), category_weights, tier_weights)
 
-    print("Done.")
+    category_weights_0 = estimate_category_weights(
+        state_value_counts, max_locked_slots=0
+    )
+    tier_weights_0 = build_tier_weights(state_value_counts, max_locked_slots=0)
+
+    export_total(
+        state_value_counts, filename="csvs/total_0_locked.csv", max_locked_slots=0
+    )
+    export_expected_rolls(
+        category_weights_0, tier_weights_0, filename="csvs/expected_rolls_0_locked.csv"
+    )
+    export_summary(
+        state_counts[frozenset()],
+        category_weights_0,
+        tier_weights_0,
+        filename="csvs/summary_0.csv",
+    )
 
 
 if __name__ == "__main__":
