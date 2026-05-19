@@ -195,7 +195,6 @@ def process_run(run):
         )
         row["locked"] = locked
         cleaned.append(row)
-        print(cleaned[-1]["locked"])
 
     return cleaned
 
