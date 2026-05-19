@@ -184,12 +184,14 @@ def process_run(run):
         return []
 
     cleaned = []
-    for i in range(CHAIN_REQ):
+    for i in range(len(no_dupes) - CHAIN_REQ):
         no_dupes[i]["locked"] = detect_locked(no_dupes[i : i + CHAIN_REQ])
         cleaned.append(no_dupes[i])
 
-    for i in range(CHAIN_REQ, len(no_dupes)):
-        no_dupes[i]["locked"] = detect_locked(no_dupes[i - CHAIN_REQ : i])
+    for i in range(len(no_dupes) - CHAIN_REQ, len(no_dupes)):
+        no_dupes[i]["locked"] = detect_locked(
+            no_dupes[min(i, len(no_dupes) - 2) : len(no_dupes)]
+        )
         cleaned.append(no_dupes[i])
 
     return cleaned
