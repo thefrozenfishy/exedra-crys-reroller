@@ -1,0 +1,303 @@
+{"roll": 0, "time": "2026-05-14T11:50:31", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 8.1%.", "s3": "ATK +6"}
+{"roll": 1, "time": "2026-05-14T11:50:38", "s1": "Increases critical rate by 5%.", "s2": "ATK +12", "s3": "Increases debuff hit rate by 4%."}
+{"roll": 2, "time": "2026-05-14T11:50:44", "s1": "Increases critical rate by 5%.", "s2": "Increases SPD by 3.", "s3": "ATK +9"}
+{"roll": 3, "time": "2026-05-14T11:50:51", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 1.2%.", "s3": "Increases HP recovery amount by 1%."}
+{"roll": 4, "time": "2026-05-14T11:50:57", "s1": "Increases critical rate by 5%.", "s2": "ATK +8", "s3": "Increases break effect by 5.4%."}
+{"roll": 5, "time": "2026-05-14T11:51:04", "s1": "Increases critical rate by 5%.", "s2": "Max HP +377", "s3": "Increases HP recovery amount by 1%."}
+{"roll": 6, "time": "2026-05-14T11:51:11", "s1": "Increases critical rate by 5%.", "s2": "DEF +5", "s3": "Increases debuff hit rate by 1%."}
+{"roll": 7, "time": "2026-05-14T11:51:17", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 3.5%.", "s3": "DEF +7"}
+{"roll": 8, "time": "2026-05-14T11:51:23", "s1": "Increases critical rate by 5%.", "s2": "Max HP +335", "s3": "Increases HP recovery amount by 2.5%."}
+{"roll": 9, "time": "2026-05-14T11:51:30", "s1": "Increases critical rate by 5%.", "s2": "Max HP +293", "s3": "Increases ATK by 60."}
+{"roll": 10, "time": "2026-05-14T11:51:36", "s1": "Increases critical rate by 5%.", "s2": "ATK +6", "s3": "Increases debuff RES by 1%."}
+{"roll": 11, "time": "2026-05-14T11:51:42", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 1.8%.", "s3": "Increases debuff hit rate by 1.2%."}
+{"roll": 12, "time": "2026-05-14T11:51:48", "s1": "Increases critical rate by 5%.", "s2": "Max HP +82", "s3": "Increases debuff hit rate by 1.2%."}
+{"roll": 13, "time": "2026-05-14T11:51:55", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 3%.", "s3": "DEF +15"}
+{"roll": 14, "time": "2026-05-14T11:52:01", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 1.8%.", "s3": "Increases debuff hit rate by 1.5%."}
+{"roll": 15, "time": "2026-05-14T11:52:07", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 1%.", "s3": "DEF +5"}
+{"roll": 16, "time": "2026-05-14T11:52:13", "s1": "Increases critical rate by 5%.", "s2": "ATK +12", "s3": "Increases HP recovery amount by 1.2%."}
+{"roll": 17, "time": "2026-05-14T11:52:20", "s1": "Increases critical rate by 5%.", "s2": "DEF +23", "s3": "Increases debuff hit rate by 1.2%."}
+{"roll": 18, "time": "2026-05-14T11:52:27", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 2.5%.", "s3": "Max HP +82"}
+{"roll": 19, "time": "2026-05-14T11:52:33", "s1": "Increases critical rate by 5%.", "s2": "Increases SPD by 3.", "s3": "Max HP +208"}
+{"roll": 20, "time": "2026-05-14T11:52:40", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 3.5%.", "s3": "ATK +7"}
+{"roll": 21, "time": "2026-05-14T11:52:45", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 1.8%.", "s3": "ATK +20"}
+{"roll": 22, "time": "2026-05-14T11:52:52", "s1": "Increases critical rate by 5%.", "s2": "Increases SPD by 4.", "s3": "Max HP +335"}
+{"roll": 23, "time": "2026-05-14T11:52:58", "s1": "Increases critical rate by 5%.", "s2": "ATK +8", "s3": "Increases debuff hit rate by 2%."}
+{"roll": 24, "time": "2026-05-14T11:53:04", "s1": "Increases critical rate by 5%.", "s2": "ATK +7", "s3": "Increases debuff RES by 1%."}
+{"roll": 25, "time": "2026-05-14T11:53:11", "s1": "Increases critical rate by 5%.", "s2": "DEF +23", "s3": "Increases debuff hit rate by 4%."}
+{"roll": 26, "time": "2026-05-14T11:53:17", "s1": "Increases critical rate by 5%.", "s2": "Max HP +40", "s3": "Increases debuff hit rate by 3%."}
+{"roll": 27, "time": "2026-05-14T11:53:23", "s1": "Increases critical rate by 5%.", "s2": "ATK +9", "s3": "Increases HP recovery amount by 1.5%."}
+{"roll": 28, "time": "2026-05-14T11:53:29", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 3%.", "s3": "Max HP +208"}
+{"roll": 29, "time": "2026-05-14T11:53:36", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 1.5%.", "s3": "Increases debuff RES by 4%."}
+{"roll": 30, "time": "2026-05-14T11:53:42", "s1": "Increases critical rate by 5%.", "s2": "DEF +10", "s3": "Increases HP recovery amount by 1%."}
+{"roll": 31, "time": "2026-05-14T11:53:48", "s1": "Increases critical rate by 5%.", "s2": "ATK +7", "s3": "Increases debuff hit rate by 1%."}
+{"roll": 32, "time": "2026-05-14T11:53:54", "s1": "Increases critical rate by 5%.", "s2": "DEF +6", "s3": "ATK +8"}
+{"roll": 33, "time": "2026-05-14T11:54:00", "s1": "Increases critical rate by 5%.", "s2": "Increases break effect by 6.6%.", "s3": "Increases debuff hit rate by 3%."}
+{"roll": 34, "time": "2026-05-14T11:54:06", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1%.", "s3": "ATK +8"}
+{"roll": 35, "time": "2026-05-14T11:54:13", "s1": "Increases critical rate by 5%.", "s2": "Max HP +335", "s3": "Increases HP recovery amount by 3.5%."}
+{"roll": 36, "time": "2026-05-14T11:54:19", "s1": "Increases critical rate by 5%.", "s2": "DEF +5", "s3": "ATK +7"}
+{"roll": 37, "time": "2026-05-14T11:54:26", "s1": "Increases critical rate by 5%.", "s2": "Max HP +335", "s3": "Increases SPD by 3."}
+{"roll": 38, "time": "2026-05-14T11:54:32", "s1": "Increases critical rate by 5%.", "s2": "Increases ATK by 60.", "s3": "DEF +11"}
+{"roll": 39, "time": "2026-05-14T11:54:38", "s1": "Increases critical rate by 5%.", "s2": "DEF +8", "s3": "Increases HP recovery amount by 1%."}
+{"roll": 40, "time": "2026-05-14T11:54:44", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 3.6%.", "s3": "Increases debuff RES by 2%."}
+{"roll": 41, "time": "2026-05-14T11:54:50", "s1": "Increases critical rate by 5%.", "s2": "Max HP +166", "s3": "ATK +7"}
+{"roll": 42, "time": "2026-05-14T11:54:57", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 8%.", "s3": "Increases debuff RES by 1.2%."}
+{"roll": 43, "time": "2026-05-14T11:55:03", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 3%.", "s3": "DEF +5"}
+{"roll": 44, "time": "2026-05-14T11:55:10", "s1": "Increases critical rate by 5%.", "s2": "DEF +8", "s3": "Max HP +420"}
+{"roll": 45, "time": "2026-05-14T11:55:16", "s1": "Increases critical rate by 5%.", "s2": "DEF +11", "s3": "Max HP +251"}
+{"roll": 46, "time": "2026-05-14T11:55:23", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 3%.", "s3": "Increases debuff hit rate by 3%."}
+{"roll": 47, "time": "2026-05-14T11:55:29", "s1": "Increases critical rate by 5%.", "s2": "Max HP +166", "s3": "DEF +11"}
+{"roll": 48, "time": "2026-05-14T11:55:35", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 1.5%.", "s3": "Increases debuff hit rate by 1%."}
+{"roll": 49, "time": "2026-05-14T11:55:41", "s1": "Increases critical rate by 5%.", "s2": "Max HP +166", "s3": "Increases SPD by 1."}
+{"roll": 50, "time": "2026-05-14T11:55:48", "s1": "Increases critical rate by 5%.", "s2": "Increases SPD by 1.", "s3": "DEF +9"}
+{"roll": 51, "time": "2026-05-14T11:55:54", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 0.9%.", "s3": "ATK +6"}
+{"roll": 52, "time": "2026-05-14T11:56:00", "s1": "Increases critical rate by 5%.", "s2": "ATK +7", "s3": "Increases debuff hit rate by 1.2%."}
+{"roll": 53, "time": "2026-05-14T11:56:06", "s1": "Increases critical rate by 5%.", "s2": "DEF +7", "s3": "Increases HP recovery amount by 1%."}
+{"roll": 54, "time": "2026-05-14T11:56:12", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 1.5%.", "s3": "Max HP +40"}
+{"roll": 55, "time": "2026-05-14T11:56:19", "s1": "Increases critical rate by 5%.", "s2": "ATK +12", "s3": "Max HP +377"}
+{"roll": 56, "time": "2026-05-14T11:56:25", "s1": "Increases critical rate by 5%.", "s2": "Max HP +40", "s3": "ATK +15"}
+{"roll": 57, "time": "2026-05-14T11:56:32", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 1.8%.", "s3": "Increases break effect by 6%."}
+{"roll": 58, "time": "2026-05-14T11:56:38", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 1.8%.", "s3": "DEF +5"}
+{"roll": 59, "time": "2026-05-14T11:56:44", "s1": "Increases critical rate by 5%.", "s2": "DEF +23", "s3": "ATK +7"}
+{"roll": 60, "time": "2026-05-14T11:56:50", "s1": "Increases critical rate by 5%.", "s2": "ATK +10", "s3": "Increases debuff RES by 1%."}
+{"roll": 61, "time": "2026-05-14T11:56:56", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1%.", "s3": "ATK +9"}
+{"roll": 62, "time": "2026-05-14T11:57:03", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 2.5%.", "s3": "Increases critical DMG by 0.9%."}
+{"roll": 63, "time": "2026-05-14T11:57:09", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 1.2%.", "s3": "Increases debuff hit rate by 2%."}
+{"roll": 64, "time": "2026-05-14T11:57:15", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 5.4%.", "s3": "ATK +6"}
+{"roll": 65, "time": "2026-05-14T11:57:21", "s1": "Increases critical rate by 5%.", "s2": "Max HP +166", "s3": "Increases debuff hit rate by 3%."}
+{"roll": 66, "time": "2026-05-14T11:57:28", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 2%.", "s3": "Increases critical DMG by 2.7%."}
+{"roll": 67, "time": "2026-05-14T11:57:34", "s1": "Increases critical rate by 5%.", "s2": "DEF +10", "s3": "Increases critical DMG by 0.9%."}
+{"roll": 68, "time": "2026-05-14T11:57:41", "s1": "Increases critical rate by 5%.", "s2": "DEF +7", "s3": "Max HP +420"}
+{"roll": 69, "time": "2026-05-14T11:57:47", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 8%.", "s3": "Increases critical DMG by 0.9%."}
+{"roll": 70, "time": "2026-05-14T11:57:53", "s1": "Increases critical rate by 5%.", "s2": "ATK +12", "s3": "Increases HP recovery amount by 3%."}
+{"roll": 71, "time": "2026-05-14T11:58:00", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1%.", "s3": "Max HP +293"}
+{"roll": 72, "time": "2026-05-14T11:58:06", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.2%.", "s3": "ATK +7"}
+{"roll": 73, "time": "2026-05-14T11:58:12", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 2%.", "s3": "ATK +10"}
+{"roll": 74, "time": "2026-05-14T11:58:19", "s1": "Increases critical rate by 5%.", "s2": "DEF +5", "s3": "Increases SPD by 3."}
+{"roll": 75, "time": "2026-05-14T11:58:25", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 1%.", "s3": "Increases HP recovery amount by 1%."}
+{"roll": 76, "time": "2026-05-14T11:58:31", "s1": "Increases critical rate by 5%.", "s2": "Max HP +124", "s3": "DEF +6"}
+{"roll": 77, "time": "2026-05-14T11:58:38", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 1.8%.", "s3": "Increases debuff hit rate by 1%."}
+{"roll": 78, "time": "2026-05-14T11:58:44", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 3.5%.", "s3": "Increases break effect by 6.4%."}
+{"roll": 79, "time": "2026-05-14T11:58:50", "s1": "Increases critical rate by 5%.", "s2": "Increases SPD by 1.", "s3": "Increases critical DMG by 1.8%."}
+{"roll": 80, "time": "2026-05-14T11:58:57", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 0.9%.", "s3": "Max HP +377"}
+{"roll": 81, "time": "2026-05-14T11:59:03", "s1": "Increases critical rate by 5%.", "s2": "ATK +30", "s3": "Increases HP recovery amount by 1.5%."}
+{"roll": 82, "time": "2026-05-14T11:59:09", "s1": "Increases critical rate by 5%.", "s2": "Max HP +208", "s3": "ATK +10"}
+{"roll": 83, "time": "2026-05-14T11:59:15", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 3%.", "s3": "Max HP +124"}
+{"roll": 84, "time": "2026-05-14T11:59:21", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 3%.", "s3": "Increases debuff RES by 2.5%."}
+{"roll": 85, "time": "2026-05-14T11:59:27", "s1": "Increases critical rate by 5%.", "s2": "Max HP +293", "s3": "Increases critical DMG by 0.9%."}
+{"roll": 86, "time": "2026-05-14T11:59:33", "s1": "Increases critical rate by 5%.", "s2": "ATK +9", "s3": "Increases break effect by 5.2%."}
+{"roll": 87, "time": "2026-05-14T11:59:39", "s1": "Increases critical rate by 5%.", "s2": "DEF +6", "s3": "Max HP +82"}
+{"roll": 88, "time": "2026-05-14T11:59:45", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 2.5%.", "s3": "DEF +6"}
+{"roll": 89, "time": "2026-05-14T11:59:52", "s1": "Increases critical rate by 5%.", "s2": "DEF +8", "s3": "Max HP +82"}
+{"roll": 90, "time": "2026-05-14T11:59:58", "s1": "Increases critical rate by 5%.", "s2": "Increases break effect by 5%.", "s3": "Increases debuff hit rate by 4%."}
+{"roll": 91, "time": "2026-05-14T12:00:04", "s1": "Increases critical rate by 5%.", "s2": "DEF +5", "s3": "Increases HP recovery amount by 1%."}
+{"roll": 92, "time": "2026-05-14T12:00:10", "s1": "Increases critical rate by 5%.", "s2": "Max HP +124", "s3": "Increases critical DMG by 3.6%."}
+{"roll": 93, "time": "2026-05-14T12:00:16", "s1": "Increases critical rate by 5%.", "s2": "Increases SPD by 4.", "s3": "Increases HP recovery amount by 3.5%."}
+{"roll": 94, "time": "2026-05-14T12:00:23", "s1": "Increases critical rate by 5%.", "s2": "Max HP +166", "s3": "Increases critical DMG by 1.8%."}
+{"roll": 95, "time": "2026-05-14T12:00:29", "s1": "Increases critical rate by 5%.", "s2": "ATK +15", "s3": "DEF +6"}
+{"roll": 96, "time": "2026-05-14T12:00:35", "s1": "Increases critical rate by 5%.", "s2": "ATK +6", "s3": "Increases debuff hit rate by 4%."}
+{"roll": 97, "time": "2026-05-14T12:00:42", "s1": "Increases critical rate by 5%.", "s2": "Increases ATK by 60.", "s3": "Max HP +208"}
+{"roll": 98, "time": "2026-05-14T12:00:48", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 2.5%.", "s3": "Increases critical DMG by 2.7%."}
+{"roll": 99, "time": "2026-05-14T12:00:54", "s1": "Increases critical rate by 5%.", "s2": "DEF +5", "s3": "Increases critical DMG by 1.8%."}
+{"roll": 100, "time": "2026-05-14T12:01:00", "s1": "Increases critical rate by 5%.", "s2": "Max HP +293", "s3": "Increases HP recovery amount by 1.2%."}
+{"roll": 101, "time": "2026-05-14T12:01:06", "s1": "Increases critical rate by 5%.", "s2": "ATK +6", "s3": "Increases debuff hit rate by 1%."}
+{"roll": 102, "time": "2026-05-14T12:01:12", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1%.", "s3": "DEF +7"}
+{"roll": 103, "time": "2026-05-14T12:01:19", "s1": "Increases critical rate by 5%.", "s2": "ATK +9", "s3": "Increases debuff RES by 2%."}
+{"roll": 104, "time": "2026-05-14T12:01:25", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 0.9%.", "s3": "Max HP +124"}
+{"roll": 105, "time": "2026-05-14T12:01:32", "s1": "Increases critical rate by 5%.", "s2": "DEF +23", "s3": "Increases critical DMG by 0.9%."}
+{"roll": 106, "time": "2026-05-14T12:01:38", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 8%.", "s3": "ATK +9"}
+{"roll": 107, "time": "2026-05-14T12:01:44", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 2%.", "s3": "Max HP +293"}
+{"roll": 108, "time": "2026-05-14T12:01:51", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 1.5%.", "s3": "DEF +23"}
+{"roll": 109, "time": "2026-05-14T12:01:57", "s1": "Increases critical rate by 5%.", "s2": "DEF +8", "s3": "Increases critical DMG by 1.8%."}
+{"roll": 110, "time": "2026-05-14T12:02:03", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 1.8%.", "s3": "Increases HP recovery amount by 1.5%."}
+{"roll": 111, "time": "2026-05-14T12:02:09", "s1": "Increases critical rate by 5%.", "s2": "ATK +6", "s3": "DEF +9"}
+{"roll": 112, "time": "2026-05-14T12:02:16", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 2%.", "s3": "Increases break effect by 5.2%."}
+{"roll": 113, "time": "2026-05-14T12:02:22", "s1": "Increases critical rate by 5%.", "s2": "Increases SPD by 1.", "s3": "Max HP +293"}
+{"roll": 114, "time": "2026-05-14T12:02:28", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 2.5%.", "s3": "Max HP +335"}
+{"roll": 115, "time": "2026-05-14T12:02:35", "s1": "Increases critical rate by 5%.", "s2": "Max HP +251", "s3": "DEF +23"}
+{"roll": 116, "time": "2026-05-14T12:02:41", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 2%.", "s3": "Increases critical DMG by 3.6%."}
+{"roll": 117, "time": "2026-05-14T12:02:48", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 0.9%.", "s3": "Max HP +82"}
+{"roll": 118, "time": "2026-05-14T12:02:54", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 8%.", "s3": "Increases break effect by 6.4%."}
+{"roll": 119, "time": "2026-05-14T12:03:00", "s1": "Increases critical rate by 5%.", "s2": "Max HP +335", "s3": "Increases critical DMG by 1.8%."}
+{"roll": 120, "time": "2026-05-14T12:03:06", "s1": "Increases critical rate by 5%.", "s2": "DEF +11", "s3": "Max HP +82"}
+{"roll": 121, "time": "2026-05-14T12:03:13", "s1": "Increases critical rate by 5%.", "s2": "Max HP +40", "s3": "Increases debuff hit rate by 2.5%."}
+{"roll": 122, "time": "2026-05-14T12:03:19", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 3.5%.", "s3": "ATK +7"}
+{"roll": 123, "time": "2026-05-14T12:03:25", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 2%.", "s3": "Increases debuff RES by 3%."}
+{"roll": 124, "time": "2026-05-14T12:03:31", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 3.6%.", "s3": "Increases break effect by 5%."}
+{"roll": 125, "time": "2026-05-14T12:03:38", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 2.5%.", "s3": "Increases HP recovery amount by 1.2%."}
+{"roll": 126, "time": "2026-05-14T12:03:44", "s1": "Increases critical rate by 5%.", "s2": "Max HP +420", "s3": "ATK +8"}
+{"roll": 127, "time": "2026-05-14T12:03:50", "s1": "Increases critical rate by 5%.", "s2": "ATK +15", "s3": "Increases critical DMG by 2.7%."}
+{"roll": 128, "time": "2026-05-14T12:03:58", "s1": "Increases critical rate by 5%.", "s2": "DEF +6", "s3": "Increases HP recovery amount by 1%."}
+{"roll": 129, "time": "2026-05-14T12:04:04", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 1.2%.", "s3": "ATK +6"}
+{"roll": 130, "time": "2026-05-14T12:04:10", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 4%.", "s3": "ATK +10"}
+{"roll": 131, "time": "2026-05-14T12:04:17", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 2%.", "s3": "Increases debuff RES by 4%."}
+{"roll": 132, "time": "2026-05-14T12:04:24", "s1": "Increases critical rate by 5%.", "s2": "ATK +10", "s3": "Max HP +377"}
+{"roll": 133, "time": "2026-05-14T12:04:30", "s1": "Increases critical rate by 5%.", "s2": "DEF +6", "s3": "Increases HP recovery amount by 1%."}
+{"roll": 134, "time": "2026-05-14T12:04:36", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 1.2%.", "s3": "Increases HP recovery amount by 1.5%."}
+{"roll": 135, "time": "2026-05-14T12:04:42", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.2%.", "s3": "Max HP +335"}
+{"roll": 136, "time": "2026-05-14T12:04:48", "s1": "Increases critical rate by 5%.", "s2": "Max HP +208", "s3": "DEF +9"}
+{"roll": 137, "time": "2026-05-14T12:04:55", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 2.5%.", "s3": "DEF +15"}
+{"roll": 138, "time": "2026-05-14T12:05:01", "s1": "Increases critical rate by 5%.", "s2": "Max HP +82", "s3": "ATK +9"}
+{"roll": 139, "time": "2026-05-14T12:05:07", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 2%.", "s3": "Increases critical DMG by 0.9%."}
+{"roll": 140, "time": "2026-05-14T12:05:13", "s1": "Increases critical rate by 5%.", "s2": "ATK +6", "s3": "Max HP +124"}
+{"roll": 141, "time": "2026-05-14T12:05:20", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.2%.", "s3": "Increases debuff hit rate by 2.5%."}
+{"roll": 142, "time": "2026-05-14T12:05:26", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 0.9%.", "s3": "Increases debuff RES by 3%."}
+{"roll": 143, "time": "2026-05-14T12:05:32", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 2.7%.", "s3": "DEF +7"}
+{"roll": 144, "time": "2026-05-14T12:05:39", "s1": "Increases critical rate by 5%.", "s2": "ATK +10", "s3": "Increases HP recovery amount by 1%."}
+{"roll": 145, "time": "2026-05-14T12:05:45", "s1": "Increases critical rate by 5%.", "s2": "DEF +7", "s3": "ATK +12"}
+{"roll": 146, "time": "2026-05-14T12:05:51", "s1": "Increases critical rate by 5%.", "s2": "Max HP +82", "s3": "ATK +6"}
+{"roll": 147, "time": "2026-05-14T12:05:58", "s1": "Increases critical rate by 5%.", "s2": "DEF +11", "s3": "Increases SPD by 1."}
+{"roll": 148, "time": "2026-05-14T12:06:04", "s1": "Increases critical rate by 5%.", "s2": "ATK +10", "s3": "Increases debuff RES by 1%."}
+{"roll": 149, "time": "2026-05-14T12:06:10", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 7.2%.", "s3": "Max HP +82"}
+{"roll": 150, "time": "2026-05-14T12:06:17", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 8.1%.", "s3": "Increases debuff hit rate by 1%."}
+{"roll": 151, "time": "2026-05-14T12:06:23", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 0.9%.", "s3": "Increases debuff hit rate by 3.5%."}
+{"roll": 152, "time": "2026-05-14T12:06:29", "s1": "Increases critical rate by 5%.", "s2": "DEF +6", "s3": "Increases HP recovery amount by 1.2%."}
+{"roll": 153, "time": "2026-05-14T12:06:35", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 2.7%.", "s3": "ATK +10"}
+{"roll": 154, "time": "2026-05-14T12:06:42", "s1": "Increases critical rate by 5%.", "s2": "DEF +5", "s3": "Max HP +251"}
+{"roll": 155, "time": "2026-05-14T12:06:49", "s1": "Increases critical rate by 5%.", "s2": "ATK +7", "s3": "Increases HP recovery amount by 1%."}
+{"roll": 156, "time": "2026-05-14T12:06:56", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 0.9%.", "s3": "Increases HP recovery amount by 8%."}
+{"roll": 157, "time": "2026-05-14T12:07:03", "s1": "Increases critical rate by 5%.", "s2": "Max HP +377", "s3": "Increases break effect by 5.8%."}
+{"roll": 158, "time": "2026-05-14T12:07:09", "s1": "Increases critical rate by 5%.", "s2": "Max HP +40", "s3": "Increases HP recovery amount by 4%."}
+{"roll": 159, "time": "2026-05-14T12:07:15", "s1": "Increases critical rate by 5%.", "s2": "DEF +5", "s3": "ATK +6"}
+{"roll": 160, "time": "2026-05-14T12:07:21", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 2.5%.", "s3": "ATK +8"}
+{"roll": 161, "time": "2026-05-14T12:07:28", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 8%.", "s3": "Max HP +40"}
+{"roll": 162, "time": "2026-05-14T12:07:34", "s1": "Increases critical rate by 5%.", "s2": "Max HP +40", "s3": "ATK +8"}
+{"roll": 163, "time": "2026-05-14T12:07:40", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 1.5%.", "s3": "ATK +9"}
+{"roll": 164, "time": "2026-05-14T12:07:47", "s1": "Increases critical rate by 5%.", "s2": "ATK +9", "s3": "Increases debuff hit rate by 2%."}
+{"roll": 165, "time": "2026-05-14T12:07:53", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 4%.", "s3": "Max HP +40"}
+{"roll": 166, "time": "2026-05-14T12:07:59", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.2%.", "s3": "DEF +7"}
+{"roll": 167, "time": "2026-05-14T12:08:06", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 3.5%.", "s3": "Max HP +40"}
+{"roll": 168, "time": "2026-05-14T12:08:12", "s1": "Increases critical rate by 5%.", "s2": "DEF +6", "s3": "Increases debuff RES by 2%."}
+{"roll": 169, "time": "2026-05-14T12:08:18", "s1": "Increases critical rate by 5%.", "s2": "DEF +7", "s3": "Increases break effect by 6%."}
+{"roll": 170, "time": "2026-05-14T12:08:25", "s1": "Increases critical rate by 5%.", "s2": "ATK +12", "s3": "Increases critical DMG by 1.8%."}
+{"roll": 171, "time": "2026-05-14T12:08:31", "s1": "Increases critical rate by 5%.", "s2": "Max HP +293", "s3": "DEF +15"}
+{"roll": 172, "time": "2026-05-14T12:08:37", "s1": "Increases critical rate by 5%.", "s2": "Max HP +208", "s3": "DEF +6"}
+{"roll": 173, "time": "2026-05-14T12:08:44", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 5.4%.", "s3": "Increases break effect by 12%."}
+{"roll": 174, "time": "2026-05-14T12:08:50", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.2%.", "s3": "Increases debuff RES by 1.5%."}
+{"roll": 175, "time": "2026-05-14T12:08:56", "s1": "Increases critical rate by 5%.", "s2": "Increases break effect by 6.2%.", "s3": "Increases debuff hit rate by 1.5%."}
+{"roll": 176, "time": "2026-05-14T12:09:02", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 3%.", "s3": "Increases debuff RES by 1.2%."}
+{"roll": 177, "time": "2026-05-14T12:09:08", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.5%.", "s3": "DEF +5"}
+{"roll": 178, "time": "2026-05-14T12:09:14", "s1": "Increases critical rate by 5%.", "s2": "DEF +5", "s3": "ATK +7"}
+{"roll": 179, "time": "2026-05-14T12:09:21", "s1": "Increases critical rate by 5%.", "s2": "Max HP +166", "s3": "Increases critical DMG by 5.4%."}
+{"roll": 180, "time": "2026-05-14T12:09:27", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 1%.", "s3": "ATK +12"}
+{"roll": 181, "time": "2026-05-14T12:09:33", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 1%.", "s3": "Max HP +166"}
+{"roll": 182, "time": "2026-05-14T12:09:38", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 2%.", "s3": "Max HP +40"}
+{"roll": 183, "time": "2026-05-14T12:09:45", "s1": "Increases critical rate by 5%.", "s2": "DEF +23", "s3": "Increases debuff hit rate by 1.2%."}
+{"roll": 184, "time": "2026-05-14T12:09:51", "s1": "Increases critical rate by 5%.", "s2": "DEF +6", "s3": "Increases HP recovery amount by 2%."}
+{"roll": 185, "time": "2026-05-14T12:09:58", "s1": "Increases critical rate by 5%.", "s2": "Max HP +377", "s3": "ATK +10"}
+{"roll": 186, "time": "2026-05-14T12:10:04", "s1": "Increases critical rate by 5%.", "s2": "ATK +9", "s3": "Increases debuff RES by 4%."}
+{"roll": 187, "time": "2026-05-14T12:10:10", "s1": "Increases critical rate by 5%.", "s2": "Max HP +251", "s3": "Increases critical DMG by 3.6%."}
+{"roll": 188, "time": "2026-05-14T12:10:16", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 4%.", "s3": "DEF +6"}
+{"roll": 189, "time": "2026-05-14T12:10:22", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 2%.", "s3": "Max HP +40"}
+{"roll": 190, "time": "2026-05-14T12:10:28", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 1.8%.", "s3": "Increases debuff hit rate by 2.5%."}
+{"roll": 191, "time": "2026-05-14T12:10:35", "s1": "Increases critical rate by 5%.", "s2": "DEF +8", "s3": "Increases debuff hit rate by 2%."}
+{"roll": 192, "time": "2026-05-14T12:10:41", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.5%.", "s3": "Increases critical DMG by 0.9%."}
+{"roll": 193, "time": "2026-05-14T12:10:48", "s1": "Increases critical rate by 5%.", "s2": "Max HP +293", "s3": "DEF +11"}
+{"roll": 194, "time": "2026-05-14T12:10:54", "s1": "Increases critical rate by 5%.", "s2": "DEF +23", "s3": "Increases critical DMG by 8.1%."}
+{"roll": 195, "time": "2026-05-14T12:11:01", "s1": "Increases critical rate by 5%.", "s2": "Max HP +166", "s3": "Increases debuff hit rate by 3.5%."}
+{"roll": 196, "time": "2026-05-14T12:11:07", "s1": "Increases critical rate by 5%.", "s2": "Max HP +82", "s3": "ATK +8"}
+{"roll": 197, "time": "2026-05-14T12:11:14", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.5%.", "s3": "DEF +8"}
+{"roll": 198, "time": "2026-05-14T12:11:20", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 1%.", "s3": "Increases HP recovery amount by 1.5%."}
+{"roll": 199, "time": "2026-05-14T12:11:26", "s1": "Increases critical rate by 5%.", "s2": "Max HP +82", "s3": "Increases critical DMG by 3.6%."}
+{"roll": 200, "time": "2026-05-14T12:11:32", "s1": "Increases critical rate by 5%.", "s2": "ATK +9", "s3": "Increases break effect by 5.6%."}
+{"roll": 201, "time": "2026-05-14T12:11:38", "s1": "Increases critical rate by 5%.", "s2": "DEF +10", "s3": "ATK +9"}
+{"roll": 202, "time": "2026-05-14T12:11:45", "s1": "Increases critical rate by 5%.", "s2": "ATK +8", "s3": "Increases break effect by 5.2%."}
+{"roll": 203, "time": "2026-05-14T12:11:51", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 2%.", "s3": "Increases critical DMG by 3.6%."}
+{"roll": 204, "time": "2026-05-14T12:11:57", "s1": "Increases critical rate by 5%.", "s2": "ATK +12", "s3": "DEF +5"}
+{"roll": 205, "time": "2026-05-14T12:12:03", "s1": "Increases critical rate by 5%.", "s2": "Max HP +40", "s3": "DEF +8"}
+{"roll": 206, "time": "2026-05-14T12:12:09", "s1": "Increases critical rate by 5%.", "s2": "Max HP +82", "s3": "Increases break effect by 5.4%."}
+{"roll": 207, "time": "2026-05-14T12:12:15", "s1": "Increases critical rate by 5%.", "s2": "ATK +9", "s3": "Increases debuff hit rate by 1%."}
+{"roll": 208, "time": "2026-05-14T12:12:21", "s1": "Increases critical rate by 5%.", "s2": "ATK +9", "s3": "Increases debuff RES by 4.5%."}
+{"roll": 209, "time": "2026-05-14T12:12:27", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.5%.", "s3": "Max HP +82"}
+{"roll": 210, "time": "2026-05-14T12:12:33", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 3%.", "s3": "Increases HP recovery amount by 1.2%."}
+{"roll": 211, "time": "2026-05-14T12:12:40", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1%.", "s3": "Increases SPD by 2."}
+{"roll": 212, "time": "2026-05-14T12:12:46", "s1": "Increases critical rate by 5%.", "s2": "DEF +6", "s3": "Increases HP recovery amount by 1.5%."}
+{"roll": 213, "time": "2026-05-14T12:12:52", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 8%.", "s3": "DEF +10"}
+{"roll": 214, "time": "2026-05-14T12:12:58", "s1": "Increases critical rate by 5%.", "s2": "Increases SPD by 1.", "s3": "Increases critical DMG by 0.9%."}
+{"roll": 215, "time": "2026-05-14T12:13:04", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.5%.", "s3": "Increases critical DMG by 5.4%."}
+{"roll": 216, "time": "2026-05-14T12:13:10", "s1": "Increases critical rate by 5%.", "s2": "Increases break effect by 5.6%.", "s3": "DEF +23"}
+{"roll": 217, "time": "2026-05-14T12:13:16", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1%.", "s3": "ATK +6"}
+{"roll": 218, "time": "2026-05-14T12:13:23", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 3.5%.", "s3": "ATK +9"}
+{"roll": 219, "time": "2026-05-14T12:13:29", "s1": "Increases critical rate by 5%.", "s2": "Max HP +40", "s3": "Increases critical DMG by 0.9%."}
+{"roll": 220, "time": "2026-05-14T12:13:35", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 2.5%.", "s3": "Max HP +335"}
+{"roll": 221, "time": "2026-05-14T12:13:42", "s1": "Increases critical rate by 5%.", "s2": "Max HP +82", "s3": "DEF +45"}
+{"roll": 222, "time": "2026-05-14T12:13:48", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 2%.", "s3": "DEF +5"}
+{"roll": 223, "time": "2026-05-14T12:13:54", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 8%.", "s3": "DEF +6"}
+{"roll": 224, "time": "2026-05-14T12:14:01", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 1.2%.", "s3": "Increases HP recovery amount by 8%."}
+{"roll": 225, "time": "2026-05-14T12:14:07", "s1": "Increases critical rate by 5%.", "s2": "ATK +15", "s3": "DEF +45"}
+{"roll": 226, "time": "2026-05-14T12:14:14", "s1": "Increases critical rate by 5%.", "s2": "ATK +6", "s3": "Increases break effect by 6.6%."}
+{"roll": 227, "time": "2026-05-14T12:14:20", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.2%.", "s3": "Increases debuff hit rate by 2.5%."}
+{"roll": 228, "time": "2026-05-14T12:14:26", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1%.", "s3": "ATK +7"}
+{"roll": 229, "time": "2026-05-14T12:14:32", "s1": "Increases critical rate by 5%.", "s2": "DEF +15", "s3": "Increases SPD by 2."}
+{"roll": 230, "time": "2026-05-14T12:14:38", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 3%.", "s3": "Increases debuff RES by 3%."}
+{"roll": 231, "time": "2026-05-14T12:14:45", "s1": "Increases critical rate by 5%.", "s2": "ATK +9", "s3": "Increases debuff hit rate by 4%."}
+{"roll": 232, "time": "2026-05-14T12:14:51", "s1": "Increases critical rate by 5%.", "s2": "Increases SPD by 4.", "s3": "DEF +8"}
+{"roll": 233, "time": "2026-05-14T12:14:58", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.2%.", "s3": "Max HP +377"}
+{"roll": 234, "time": "2026-05-14T12:15:05", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 3%.", "s3": "Max HP +82"}
+{"roll": 235, "time": "2026-05-14T12:15:11", "s1": "Increases critical rate by 5%.", "s2": "DEF +5", "s3": "ATK +6"}
+{"roll": 236, "time": "2026-05-14T12:15:16", "s1": "Increases critical rate by 5%.", "s2": "Max HP +124", "s3": "Increases critical DMG by 0.9%."}
+{"roll": 237, "time": "2026-05-14T12:15:23", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 1.2%.", "s3": "Increases critical DMG by 4.5%."}
+{"roll": 238, "time": "2026-05-14T12:15:29", "s1": "Increases critical rate by 5%.", "s2": "Max HP +335", "s3": "ATK +8"}
+{"roll": 239, "time": "2026-05-14T12:15:35", "s1": "Increases critical rate by 5%.", "s2": "DEF +6", "s3": "Increases debuff RES by 1.2%."}
+{"roll": 240, "time": "2026-05-14T12:15:41", "s1": "Increases critical rate by 5%.", "s2": "DEF +6", "s3": "Max HP +124"}
+{"roll": 241, "time": "2026-05-14T12:15:48", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 1%.", "s3": "ATK +7"}
+{"roll": 242, "time": "2026-05-14T12:15:54", "s1": "Increases critical rate by 5%.", "s2": "Increases break effect by 5%.", "s3": "Increases critical DMG by 1.8%."}
+{"roll": 243, "time": "2026-05-14T12:16:00", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 4%.", "s3": "Max HP +293"}
+{"roll": 244, "time": "2026-05-14T12:16:06", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 1%.", "s3": "Max HP +166"}
+{"roll": 245, "time": "2026-05-14T12:16:13", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 1.5%.", "s3": "Max HP +40"}
+{"roll": 246, "time": "2026-05-14T12:16:19", "s1": "Increases critical rate by 5%.", "s2": "Max HP +293", "s3": "ATK +7"}
+{"roll": 247, "time": "2026-05-14T12:16:25", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 1.2%.", "s3": "DEF +8"}
+{"roll": 248, "time": "2026-05-14T12:16:31", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 0.9%.", "s3": "Max HP +40"}
+{"roll": 249, "time": "2026-05-14T12:16:38", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.2%.", "s3": "ATK +30"}
+{"roll": 250, "time": "2026-05-14T12:16:44", "s1": "Increases critical rate by 5%.", "s2": "Increases Debuff RES by 8%.", "s3": "Max HP +251"}
+{"roll": 251, "time": "2026-05-14T12:16:50", "s1": "Increases critical rate by 5%.", "s2": "ATK +15", "s3": "Increases SPD by 2."}
+{"roll": 252, "time": "2026-05-14T12:16:55", "s1": "Increases critical rate by 5%.", "s2": "Max HP +251", "s3": "DEF +6"}
+{"roll": 253, "time": "2026-05-14T12:17:01", "s1": "Increases critical rate by 5%.", "s2": "ATK +7", "s3": "Increases critical DMG by 4.5%."}
+{"roll": 254, "time": "2026-05-14T12:17:08", "s1": "Increases critical rate by 5%.", "s2": "DEF +10", "s3": "Increases break effect by 5%."}
+{"roll": 255, "time": "2026-05-14T12:17:14", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.2%.", "s3": "Max HP +40"}
+{"roll": 256, "time": "2026-05-14T12:17:20", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 1%.", "s3": "Max HP +166"}
+{"roll": 257, "time": "2026-05-14T12:17:26", "s1": "Increases critical rate by 5%.", "s2": "Max HP +124", "s3": "ATK +6"}
+{"roll": 258, "time": "2026-05-14T12:17:32", "s1": "Increases critical rate by 5%.", "s2": "DEF +9", "s3": "Increases debuff hit rate by 3.5%."}
+{"roll": 259, "time": "2026-05-14T12:17:38", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 2.5%.", "s3": "Increases debuff hit rate by 1.5%."}
+{"roll": 260, "time": "2026-05-14T12:17:44", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 3%.", "s3": "ATK +8"}
+{"roll": 261, "time": "2026-05-14T12:17:50", "s1": "Increases critical rate by 5%.", "s2": "ATK +7", "s3": "DEF +7"}
+{"roll": 262, "time": "2026-05-14T12:17:56", "s1": "Increases critical rate by 5%.", "s2": "DEF +7", "s3": "Increases HP recovery amount by 1%."}
+{"roll": 263, "time": "2026-05-14T12:18:02", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 1.5%.", "s3": "Increases debuff hit rate by 1%."}
+{"roll": 264, "time": "2026-05-14T12:18:09", "s1": "Increases critical rate by 5%.", "s2": "ATK +6", "s3": "Max HP +208"}
+{"roll": 265, "time": "2026-05-14T12:18:15", "s1": "Increases critical rate by 5%.", "s2": "DEF +23", "s3": "Increases debuff RES by 1%."}
+{"roll": 266, "time": "2026-05-14T12:18:21", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.2%.", "s3": "Increases critical DMG by 1.8%."}
+{"roll": 267, "time": "2026-05-14T12:18:28", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 4%.", "s3": "DEF +7"}
+{"roll": 268, "time": "2026-05-14T12:18:34", "s1": "Increases critical rate by 5%.", "s2": "Max HP +82", "s3": "DEF +7"}
+{"roll": 269, "time": "2026-05-14T12:18:40", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 1%.", "s3": "Max HP +124"}
+{"roll": 270, "time": "2026-05-14T12:18:46", "s1": "Increases critical rate by 5%.", "s2": "ATK +8", "s3": "DEF +23"}
+{"roll": 271, "time": "2026-05-14T12:18:52", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 2%.", "s3": "ATK +12"}
+{"roll": 272, "time": "2026-05-14T12:18:58", "s1": "Increases critical rate by 5%.", "s2": "DEF +10", "s3": "ATK +15"}
+{"roll": 273, "time": "2026-05-14T12:19:05", "s1": "Increases critical rate by 5%.", "s2": "ATK +7", "s3": "Increases HP recovery amount by 4%."}
+{"roll": 274, "time": "2026-05-14T12:19:11", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.2%.", "s3": "Increases debuff RES by 1.2%."}
+{"roll": 275, "time": "2026-05-14T12:19:18", "s1": "Increases critical rate by 5%.", "s2": "DEF +15", "s3": "Increases critical DMG by 0.9%."}
+{"roll": 276, "time": "2026-05-14T12:19:24", "s1": "Increases critical rate by 5%.", "s2": "DEF +7", "s3": "Max HP +293"}
+{"roll": 277, "time": "2026-05-14T12:19:30", "s1": "Increases critical rate by 5%.", "s2": "Increases break effect by 5%.", "s3": "Increases debuff hit rate by 2%."}
+{"roll": 278, "time": "2026-05-14T12:19:37", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 2%.", "s3": "Increases debuff RES by 1%."}
+{"roll": 279, "time": "2026-05-14T12:19:44", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.2%.", "s3": "Max HP +377"}
+{"roll": 280, "time": "2026-05-14T12:19:50", "s1": "Increases critical rate by 5%.", "s2": "Max HP +166", "s3": "Increases HP recovery amount by 1.5%."}
+{"roll": 281, "time": "2026-05-14T12:19:56", "s1": "Increases critical rate by 5%.", "s2": "Max HP +166", "s3": "ATK +8"}
+{"roll": 282, "time": "2026-05-14T12:20:02", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1%.", "s3": "ATK +15"}
+{"roll": 283, "time": "2026-05-14T12:20:09", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 2.5%.", "s3": "DEF +7"}
+{"roll": 284, "time": "2026-05-14T12:20:15", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 4.5%.", "s3": "Increases HP recovery amount by 1.2%."}
+{"roll": 285, "time": "2026-05-14T12:20:22", "s1": "Increases critical rate by 5%.", "s2": "ATK +8", "s3": "Increases critical DMG by 3.6%."}
+{"roll": 286, "time": "2026-05-14T12:20:28", "s1": "Increases critical rate by 5%.", "s2": "Increases critical DMG by 2.7%.", "s3": "Max HP +377"}
+{"roll": 287, "time": "2026-05-14T12:20:35", "s1": "Increases critical rate by 5%.", "s2": "DEF +5", "s3": "Increases HP recovery amount by 2%."}
+{"roll": 288, "time": "2026-05-14T12:20:41", "s1": "Increases critical rate by 5%.", "s2": "DEF +10", "s3": "Increases HP recovery amount by 1%."}
+{"roll": 289, "time": "2026-05-14T12:20:47", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff RES by 4.5%.", "s3": "DEF +8"}
+{"roll": 290, "time": "2026-05-14T12:20:54", "s1": "Increases critical rate by 5%.", "s2": "Max HP +124", "s3": "ATK +10"}
+{"roll": 291, "time": "2026-05-14T12:21:00", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1.5%.", "s3": "Increases debuff hit rate by 4%."}
+{"roll": 292, "time": "2026-05-14T12:21:06", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1%.", "s3": "ATK +6"}
+{"roll": 293, "time": "2026-05-14T12:21:13", "s1": "Increases critical rate by 5%.", "s2": "Increases SPD by 2.", "s3": "Increases critical DMG by 1.8%."}
+{"roll": 294, "time": "2026-05-14T12:21:19", "s1": "Increases critical rate by 5%.", "s2": "DEF +9", "s3": "ATK +9"}
+{"roll": 295, "time": "2026-05-14T12:21:25", "s1": "Increases critical rate by 5%.", "s2": "Increases HP recovery amount by 1%.", "s3": "Increases debuff RES by 1%."}
+{"roll": 296, "time": "2026-05-14T12:21:31", "s1": "Increases critical rate by 5%.", "s2": "Increases debuff hit rate by 4%.", "s3": "Increases SPD by 2."}
+{"roll": 297, "time": "2026-05-14T12:21:38", "s1": "Increases critical rate by 5%.", "s2": "Max HP +208", "s3": "ATK +15"}
+{"roll": 298, "time": "2026-05-14T12:21:44", "s1": "Increases critical rate by 5%.", "s2": "ATK +7", "s3": "Max HP +293"}
+{"roll": 299, "time": "2026-05-14T12:21:50", "s1": "Increases critical rate by 5%.", "s2": "ATK +10", "s3": "Increases debuff hit rate by 1.5%."}
+{"roll": 300, "time": "2026-05-14T12:21:57", "s1": "Increases critical rate by 5%.", "s2": "ATK +10", "s3": "Increases debuff hit rate by 4%."}
+{"roll": 301, "time": "2026-05-14T12:22:03", "s1": "Increases critical rate by 5%.", "s2": "ATK +7", "s3": "DEF +8"}
+{"roll": 302, "time": "2026-05-14T12:22:09", "s1": "Increases critical rate by 5%.", "s2": "Max HP +251", "s3": "Increases critical DMG by 10%."}

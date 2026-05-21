@@ -1,0 +1,4 @@
+{"roll": 0, "time": "2026-05-09T11:03:01", "s1": "DEF +45", "s2": "Increases SPD by 3.", "s3": "Max HP +124"}
+{"roll": 1, "time": "2026-05-09T11:03:07", "s1": "Increases debuff hit rate by 2%.", "s2": "DEF +8", "s3": "Increases critical DMG by 0.9%."}
+{"roll": 2, "time": "2026-05-09T11:03:11", "s1": "Increases debuff RES by 4%.", "s2": "Increases critical DMG by 0.9%.", "s3": "Increases break effect by 5.8%."}
+{"roll": 3, "time": "2026-05-09T11:03:16", "s1": "Max HP +335", "s2": "Increases Debuff RES by 8%.", "s3": "Increases HP recovery amount by 8%."}

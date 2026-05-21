@@ -1,0 +1,15 @@
+{"roll": 0, "time": "2026-05-10T14:31:46", "s1": "Increases HP recovery amount by 2.5%.", "s2": "Increases debuff RES by 1.5%.", "s3": "Increases critical rate by 2%."}
+{"roll": 1, "time": "2026-05-10T14:31:51", "s1": "DEF +7", "s2": "Increases critical rate by 0.5%.", "s3": "Increases debuff RES by 3.5%."}
+{"roll": 2, "time": "2026-05-10T14:31:55", "s1": "Increases debuff hit rate by 1%.", "s2": "ATK +6", "s3": "Max HP +124"}
+{"roll": 3, "time": "2026-05-10T14:32:05", "s1": "Increases debuff hit rate by 1%.", "s2": "Increases HP recovery amount by 1.2%.", "s3": "Increases critical rate by 0.5%."}
+{"roll": 4, "time": "2026-05-10T14:32:13", "s1": "Max HP +166", "s2": "Increases HP recovery amount by 3.5%.", "s3": "Increases critical rate by 1%."}
+{"roll": 5, "time": "2026-05-10T14:32:17", "s1": "Max HP +82", "s2": "ATK +7", "s3": "Increases debuff hit rate by 1.5%."}
+{"roll": 6, "time": "2026-05-10T14:32:22", "s1": "Increases debuff RES by 1.5%.", "s2": "DEF +9", "s3": "Increases critical DMG by 1.8%."}
+{"roll": 7, "time": "2026-05-10T14:32:27", "s1": "DEF +5", "s2": "Increases debuff RES by 1.2%.", "s3": "ATK +15"}
+{"roll": 8, "time": "2026-05-10T14:32:32", "s1": "Increases critical DMG by 0.9%.", "s2": "Increases critical rate by 1%.", "s3": "DEF +5"}
+{"roll": 9, "time": "2026-05-10T14:32:37", "s1": "Increases debuff hit rate by 3%.", "s2": "Increases HP recovery amount by 1.2%.", "s3": "DEF +45"}
+{"roll": 10, "time": "2026-05-10T14:32:42", "s1": "Max HP +377", "s2": "ATK +8", "s3": "Increases HP recovery amount by 3.5%."}
+{"roll": 11, "time": "2026-05-10T14:32:46", "s1": "Increases HP recovery amount by 1.5%.", "s2": "DEF +6", "s3": "Increases critical DMG by 1.8%."}
+{"roll": 12, "time": "2026-05-10T14:32:51", "s1": "Max HP +40", "s2": "Increases critical rate by 1%.", "s3": "DEF +6"}
+{"roll": 13, "time": "2026-05-10T14:32:56", "s1": "Increases debuff hit rate by 2.5%.", "s2": "Increases critical DMG by 2.7%.", "s3": "Increases break effect by 6.2%."}
+{"roll": 14, "time": "2026-05-10T14:33:01", "s1": "DEF +8", "s2": "Increases debuff hit rate by 3.5%.", "s3": "Increases SPD by 4."}

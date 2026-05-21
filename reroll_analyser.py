@@ -398,11 +398,8 @@ def main():
     runs = load_runs()
     state_counts, state_value_counts = compute(runs)
 
-    category_weights = estimate_category_weights(state_value_counts)
-    tier_weights = build_tier_weights(state_value_counts)
-
-    # No locked states are guaranteed to be correct
-
+    # Non-locked states, so these are guaranteed to be correct
+    # 0 locked
     category_weights_0 = estimate_category_weights(
         state_value_counts, max_locked_slots=0
     )
@@ -422,12 +419,42 @@ def main():
     )
 
     # Adding in locked states I _think_ is fine but unsure
-
-    export_total(state_value_counts, filename="csvs/total.csv")
-    export_expected_rolls(
-        category_weights, tier_weights, filename="csvs/expected_rolls.csv"
+    # 1 locked
+    category_weights_1 = estimate_category_weights(
+        state_value_counts, max_locked_slots=1
     )
-    export_summary(sum(state_counts.values()), category_weights, tier_weights)
+    tier_weights_1 = build_tier_weights(state_value_counts, max_locked_slots=1)
+
+    export_total(
+        state_value_counts, filename="csvs/total_1_locked.csv", max_locked_slots=1
+    )
+    export_expected_rolls(
+        category_weights_1,
+        tier_weights_1,
+        filename="csvs/expected_rolls_1_locked.csv",
+    )
+    total_rolls_1 = sum(cnt for state, cnt in state_counts.items() if len(state) <= 1)
+    export_summary(
+        total_rolls_1,
+        category_weights_1,
+        tier_weights_1,
+        filename="csvs/summary_1.csv",
+    )
+
+    # 2 locked
+    category_weights = estimate_category_weights(state_value_counts)
+    tier_weights = build_tier_weights(state_value_counts)
+
+    export_total(state_value_counts, filename="csvs/total_2_locked.csv")
+    export_expected_rolls(
+        category_weights, tier_weights, filename="csvs/expected_rolls_2_locked.csv"
+    )
+    export_summary(
+        sum(state_counts.values()),
+        category_weights,
+        tier_weights,
+        filename="csvs/summary_2.csv",
+    )
 
 
 if __name__ == "__main__":
