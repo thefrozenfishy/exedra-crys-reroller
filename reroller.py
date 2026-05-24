@@ -428,6 +428,7 @@ def reroll(
             if stop_flag.is_set():
                 break
             click_reroll_button(win, debug_log)
+            pyautogui.sleep(0.3)    
             continue
 
         current_values = fetch_current_crys_values(win, debug_log, False)
@@ -602,16 +603,20 @@ def main():
     root = tk.Tk()
     root.title("Exedra Auto Reroller")
     try:
-        root.iconbitmap(resource_path("icon.ico"))
+        right_frame.iconbitmap(resource_path("icon.ico"))
     except Exception:
         pass
 
-    if new_version := check_git_version_match():
-        height = 720
-    else:
-        height = 660
-    root.geometry(f"340x{height}+50+50")
+    root.geometry("1180x660+50+50")
     root.resizable(False, False)
+    content_frame = ttk.Frame(root)
+    content_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+    left_frame = ttk.Frame(content_frame)
+    left_frame.pack(side="left", fill="y", padx=(0, 12))
+
+    right_frame = ttk.Frame(content_frame)
+    right_frame.pack(side="left", fill="both", expand=True)
 
     dropdown_options = [""] + list(crys_options.keys())  # "" = clear/empty option
     dropdown_vars = []
@@ -649,7 +654,7 @@ def main():
         persist_settings()
 
     for i in range(3):
-        row_frame = ttk.Frame(root)
+        row_frame = ttk.Frame(left_frame)
         row_frame.pack(fill="x", padx=10, pady=(6, 0))
 
         saved = saved_targets[i] if i < len(saved_targets) else {}
@@ -667,17 +672,17 @@ def main():
         box.pack(side="left")
         box.bind("<<ComboboxSelected>>", lambda e, idx=i: update_min_level(idx))
 
-        ttk.Label(root, text="  Minimum value").pack(anchor="w", padx=30)
+        ttk.Label(left_frame, text="  Minimum value").pack(anchor="w", padx=30)
         min_var = tk.StringVar(value="")
         min_level_vars.append(min_var)
         min_box = ttk.Combobox(
-            root,
+            left_frame,
             textvariable=min_var,
             values=[""],
             state="readonly",
             width=32,
         )
-        min_box.pack(anchor="w", padx=(42, 10), pady=(0, 2))
+        min_box.pack(anchor="w", padx=(42, 10), pady=(0, 8))
         min_box.bind("<<ComboboxSelected>>", persist_settings)
         min_level_boxes.append(min_box)
 
@@ -692,9 +697,7 @@ def main():
             min_level_boxes[i]["values"] = options
             min_level_vars[i].set(min_value if min_value in options else "")
 
-    ttk.Separator(root, orient="horizontal").pack(fill="x", padx=10, pady=8)
-
-    match_frame = ttk.Frame(root)
+    match_frame = ttk.Frame(right_frame)
     match_frame.pack(anchor="w", padx=14)
     ttk.Label(match_frame, text="Match mode:").pack(side="left", padx=(0, 8))
     match_mode_var = tk.StringVar(value=settings.get("match_mode", "OR"))
@@ -714,14 +717,14 @@ def main():
     ).pack(side="left", padx=4)
     permalock_var = tk.BooleanVar(value=settings.get("permalock_once_reached", True))
     permalock_check = ttk.Checkbutton(
-        root,
+        right_frame,
         text="Permalock options underways",
         variable=permalock_var,
         command=persist_settings,
     )
     permalock_check.pack(anchor="w", padx=28, pady=(2, 0))
     ttk.Label(
-        root,
+        right_frame,
         text="Locks in rarest options first to minimize total rolls.\nMeaning you might see it roll past spd4 or HP420\nthis is by design.",
         foreground="gray",
         font=("TkDefaultFont", 8),
@@ -736,11 +739,11 @@ def main():
     match_mode_var.trace_add("write", update_permalock_visibility)
     update_permalock_visibility()
 
-    ttk.Separator(root, orient="horizontal").pack(fill="x", padx=10, pady=8)
+    ttk.Separator(right_frame, orient="horizontal").pack(fill="x", padx=10, pady=8)
 
     should_log_var = tk.BooleanVar(value=settings.get("should_log", True))
     ttk.Checkbutton(
-        root,
+        right_frame,
         text="Save roll log (JSONL)",
         variable=should_log_var,
         command=persist_settings,
@@ -748,13 +751,13 @@ def main():
 
     debug_log_var = tk.BooleanVar(value=settings.get("debug_log", False))
     ttk.Checkbutton(
-        root,
+        right_frame,
         text="Verbose debug logging",
         variable=debug_log_var,
         command=persist_settings,
     ).pack(anchor="w", padx=14)
 
-    ttk.Separator(root, orient="horizontal").pack(fill="x", padx=10, pady=8)
+    ttk.Separator(right_frame, orient="horizontal").pack(fill="x", padx=10, pady=8)
 
     def start_reroll():
         nonlocal reroll_thread
@@ -839,7 +842,7 @@ def main():
         stop_flag.set()
         logger.info("Stop requested — will halt after current roll.")
 
-    btn_frame = ttk.Frame(root)
+    btn_frame = ttk.Frame(right_frame)
     btn_frame.pack(pady=4)
     ttk.Button(btn_frame, text="Start Reroll", command=start_reroll).pack(
         side="left", padx=6
@@ -849,32 +852,32 @@ def main():
     keyboard.add_hotkey("ctrl+shift+e", stop_reroll)
 
     ttk.Label(
-        root,
+        right_frame,
         text="Ctrl+Shift+Q = force quit at any time",
         foreground="gray",
         font=("TkDefaultFont", 8),
     ).pack(pady=(8, 0))
     ttk.Label(
-        root,
+        right_frame,
         text="Ctrl+Shift+E = stop reroll",
         foreground="gray",
         font=("TkDefaultFont", 8),
     ).pack(pady=(2, 0))
     ttk.Label(
-        root,
+        left_frame,
         text=f"Current version: {__version__}",
         foreground="black",
         font=("TkDefaultFont", 10),
     ).pack(pady=(8, 0))
-    if new_version:
+    if new_version := check_git_version_match():
         ttk.Label(
-            root,
+            left_frame,
             text=f"Version {new_version} available",
             foreground="black",
             font=("TkDefaultFont", 10, "bold"),
         ).pack(pady=(4, 0))
         button = ttk.Button(
-            root,
+            left_frame,
             text="Download Latest Version",
             command=lambda: webbrowser.open(
                 f"https://github.com/thefrozenfishy/exedra-crys-reroller/releases/tag/version-{new_version}"
@@ -882,12 +885,8 @@ def main():
         )
         button.pack()
 
-    ttk.Separator(root, orient="horizontal").pack(fill="x", padx=10, pady=(10, 4))
-    ttk.Label(root, text="Log", font=("TkDefaultFont", 8), foreground="gray").pack(
-        anchor="w", padx=14
-    )
     log_box = ScrolledText(
-        root,
+        right_frame,
         state="disabled",
         height=8,
         font=("Courier", 8),
@@ -901,7 +900,7 @@ def main():
 
     logger.info("Running version %s", __version__)
 
-    root.mainloop()
+    right_frame.mainloop()
 
 
 if __name__ == "__main__":
