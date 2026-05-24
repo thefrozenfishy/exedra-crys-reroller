@@ -99,20 +99,53 @@ class _GUILogHandler(logging.Handler):
         super().__init__()
         self.widget = widget
 
+        self.live_line_start = None
+        self.live_line_end = None
+
+        self.last_roll_message = None
+
     def emit(self, record: logging.LogRecord):
-        msg = self.format(record) + "\n"
+        msg = self.format(record)
 
         def _append():
-            self.widget.configure(state="normal")
-            self.widget.insert(tk.END, msg)
-            self.widget.see(tk.END)
-            self.widget.configure(state="disabled")
+            try:
+                self.widget.configure(state="normal")
+                if msg.startswith("Roll #"):
+                    if self.last_roll_message is None:
+                        insert_index = self.widget.index(tk.END + "-1c")
+                        self.widget.insert(tk.END, msg + "\n")
+                        self.live_line_start = insert_index
+                        self.live_line_end = f"{insert_index} lineend +1c"
+                        self.last_roll_message = msg
+
+                    else:
+                        old_state = self.last_roll_message.split(" ", 2)[-1]
+                        new_state = msg.split(" ", 2)[-1]
+
+                        if old_state != new_state:
+                            insert_index = self.widget.index(tk.END + "-1c")
+                            self.widget.insert(tk.END, msg + "\n")
+                            self.live_line_start = insert_index
+                            self.live_line_end = f"{insert_index} lineend +1c"
+                        else:
+                            self.widget.delete(                                self.live_line_start,                                self.live_line_end                            )
+                            insert_index = self.live_line_start
+                            self.widget.insert(insert_index, msg + "\n")
+                            self.live_line_end = f"{insert_index} lineend +1c"
+                        self.last_roll_message = msg
+                else:
+                    self.widget.insert(tk.END, msg + "\n")
+
+                self.widget.see(tk.END)
+                self.widget.configure(state="disabled")
+
+            except tk.TclError:
+                pass
 
         try:
             self.widget.after(0, _append)
         except RuntimeError:
-            pass  # widget destroyed
-
+            pass
 
 def load_settings() -> dict:
     try:
