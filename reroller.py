@@ -128,7 +128,7 @@ class _GUILogHandler(logging.Handler):
                             self.live_line_start = insert_index
                             self.live_line_end = f"{insert_index} lineend +1c"
                         else:
-                            self.widget.delete(                                self.live_line_start,                                self.live_line_end                            )
+                            self.widget.delete(self.live_line_start, self.live_line_end)
                             insert_index = self.live_line_start
                             self.widget.insert(insert_index, msg + "\n")
                             self.live_line_end = f"{insert_index} lineend +1c"
@@ -146,6 +146,7 @@ class _GUILogHandler(logging.Handler):
             self.widget.after(0, _append)
         except RuntimeError:
             pass
+
 
 def load_settings() -> dict:
     try:
@@ -461,7 +462,7 @@ def reroll(
             if stop_flag.is_set():
                 break
             click_reroll_button(win, debug_log)
-            pyautogui.sleep(0.3)    
+            pyautogui.sleep(0.3)
             continue
 
         current_values = fetch_current_crys_values(win, debug_log, False)
@@ -636,12 +637,12 @@ def main():
     root = tk.Tk()
     root.title("Exedra Auto Reroller")
     try:
-        right_frame.iconbitmap(resource_path("icon.ico"))
+        root.iconbitmap(resource_path("icon.ico"))
     except Exception:
         pass
 
-    root.geometry("1180x660+50+50")
-    root.resizable(False, False)
+    root.geometry("640x360+50+50")
+    root.minsize(640, 360)
     content_frame = ttk.Frame(root)
     content_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
@@ -921,7 +922,7 @@ def main():
     log_box = ScrolledText(
         right_frame,
         state="disabled",
-        height=8,
+        height=10,
         font=("Courier", 8),
         wrap="word",
     )
