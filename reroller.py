@@ -455,7 +455,15 @@ def reroll(
         "Starting reroll | mode=%s | targets: %s", match_mode, list(target_set)
     )
     already_locked_targets = []
+    miss_count = 0
     while not stop_flag.is_set():
+        miss_count += 1
+        if miss_count > 6:
+            logger.error("ERROR! Could not find reroll screen!")
+            logger.error(
+                "Have you rolled at least once so there are subcrys on this crys?"
+            )
+            stop_flag.set()
         pyautogui.sleep(0.2)
         if not is_on_reroll_screen(win, debug_log):
             logger.debug("Not on reroll screen")
@@ -469,7 +477,7 @@ def reroll(
 
         if None in current_values:
             logger.debug(
-                "Roll #%d — could not read all substats (%s), retrying…",
+                "Roll #%03d — could not read all substats (%s), retrying…",
                 roll_number,
                 current_values,
             )
@@ -489,7 +497,7 @@ def reroll(
         found_targets = [v for v in current_values if v in target_set]
 
         logger.info(
-            "Roll #%d %s",
+            "Roll #%03d %s",
             roll_number,
             ", ".join(["✔" if v in target_set else "❌" for v in current_values]),
         )
@@ -499,6 +507,7 @@ def reroll(
             found_targets,
         )
 
+        miss_count = 0
         if found_targets:
             if match_mode == "OR":
                 logger.info("Found one target in OR mode, stopping")
@@ -621,14 +630,6 @@ def check_git_version_match():
 
 
 def main():
-    win = get_game_window()
-    try:
-        win.activate()
-    except Exception as e:
-        logger.warning(
-            "Could not activate window — make sure Exedra is visible. (%s)", e
-        )
-
     stop_flag = threading.Event()
     reroll_thread: threading.Thread | None = None
 
@@ -859,7 +860,7 @@ def main():
         reroll_thread = threading.Thread(
             target=_reroll_wrapper,
             args=(
-                win,
+                get_game_window(),
                 targets,
                 match_mode,
                 permalock_var.get(),
