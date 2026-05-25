@@ -122,16 +122,20 @@ class _GUILogHandler(logging.Handler):
                         old_state = self.last_roll_message.split(" ", 2)[-1]
                         new_state = msg.split(" ", 2)[-1]
 
-                        if old_state != new_state:
-                            insert_index = self.widget.index(tk.END + "-1c")
-                            self.widget.insert(tk.END, msg + "\n")
-                            self.live_line_start = insert_index
-                            self.live_line_end = f"{insert_index} lineend +1c"
-                        else:
+                        if (
+                            old_state == new_state
+                            and self.live_line_start
+                            == self.widget.index("end-2l linestart")
+                        ):
                             self.widget.delete(self.live_line_start, self.live_line_end)
                             insert_index = self.live_line_start
-                            self.widget.insert(insert_index, msg + "\n")
-                            self.live_line_end = f"{insert_index} lineend +1c"
+                        else:
+                            insert_index = self.widget.index(tk.END + "-1c")
+
+                        self.widget.insert(insert_index, msg + "\n")
+
+                        self.live_line_start = insert_index
+                        self.live_line_end = f"{insert_index} lineend +1c"
                         self.last_roll_message = msg
                 else:
                     self.widget.insert(tk.END, msg + "\n")
