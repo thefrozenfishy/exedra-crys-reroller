@@ -9,7 +9,7 @@ import pandas as pd
 
 SLOTS = 3
 CHAIN_REQ = 3
-SIMULATIONS = 200_000
+SIMULATIONS = 500_000
 STAT_CATEGORIES = {
     "Max HP": [
         "Max HP +40",
@@ -358,7 +358,7 @@ def export_expected_rolls(
     for category, values in STAT_CATEGORIES.items():
         for val in values:
             probability = estimate_probability(
-                [val], category_weights, tier_weights, simulations=50_000
+                [val], category_weights, tier_weights, simulations=SIMULATIONS
             )
             exp = float("inf") if probability <= 0 else 1 / probability
             try:
