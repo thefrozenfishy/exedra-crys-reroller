@@ -8,7 +8,6 @@
 ## Usage
 
 * This assumes your game runs in 16:9 aspect ratio. I have not tested on emulator myself so do tell if it doesn't work.
-* Download exe from [releases](https://github.com/thefrozenfishy/exedra-link-raid-automation/releases) and run. Keep in mind the window needs to be visible on the screen for the OCR to function properly.
 * At any point, press ``ctrl+shift+q`` to exit the program.
 * At any point, press ``ctrl+shift+e`` to stop rolling.
 * Check all the stats you wish to reroll for. It will consider any stat equal to or better than the ``Minimum value`` as a target. So if you want any crit rate just choose Minimum value ``Increase critical rate by 0.5%``.
